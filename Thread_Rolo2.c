@@ -21,7 +21,7 @@ struct threads_type{
   int arg1;
   float result;
   int lottery_weight;
-  
+
 };
 
 struct threads_type list_of_threads[Number_Of_Threads];
@@ -51,6 +51,7 @@ void sumador(void){
         printf("Sumando (%d) en hilo (%d), arg (%d)\n",i, current_thread.id, arg);
         if (i % 3 == 0) {
             printf("sumador: switching\n");
+            signal(SIGALRM, SIG_DFL);
             dummy_scheduler();
         }
         usleep(SECOND);

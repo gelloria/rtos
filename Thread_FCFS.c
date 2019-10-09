@@ -90,6 +90,12 @@ int setup(void) {
   list_of_threads[thread_counter].function = NULL;
   list_of_threads[thread_counter].arg1 = thread_counter;
   list_of_threads[thread_counter].result = 0;
+
+  sigset_t block_alarm;
+	sigemptyset (&block_alarm);
+	sigaddset (&block_alarm, SIGALRM);
+	sigprocmask (SIG_UNBLOCK, &block_alarm, NULL);
+
   int main_setup = sigsetjmp(list_of_threads[thread_counter].env,1);
   return main_setup;
 }
