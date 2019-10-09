@@ -19,6 +19,9 @@ struct threads_type{
   char stack[STACK_SIZE];
   void *(function);
   int arg1;
+  float result;
+  int lottery_weight;
+  
 };
 
 struct threads_type list_of_threads[Number_Of_Threads];
@@ -40,8 +43,9 @@ void dummy_scheduler(){
 
 
 void sumador(void){
-    int i=0;
+
     int arg = current_thread.arg1;
+    int i=arg;
     while(1) {
         ++i;
         printf("Sumando (%d) en hilo (%d), arg (%d)\n",i, current_thread.id, arg);
@@ -76,6 +80,8 @@ void create_hilo(void *function, int arg) {
 }
 
 int main(){
+
+
     create_hilo(sumador, 69);
     create_hilo(sumador, 80);
     create_hilo(sumador, 30);
