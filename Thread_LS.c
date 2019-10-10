@@ -107,15 +107,12 @@ program_finished(); //Finaliza el programa si current_id llego a ser el ultimo.
 
 }
 
-
-
 void Thread_finished(){
   printf("Termine un thread\n");
   current_thread.state = 1;
   save_current_state();
   Scheduler();
 }
-
 
 
 void signal_handler(){
