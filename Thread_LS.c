@@ -22,12 +22,20 @@ struct thread_metadata {
   int result;
 };
 
+enum thread_state {
+  READY,
+  WAITING,
+  RUNNING,
+  FINISHED,
+  OPENED
+};
+
 struct threads_type{
   int id;
   sigjmp_buf env;
   char stack[STACK_SIZE];
   void *(function);
-  int state;
+  enum thread_state state;
   struct thread_metadata data;
 };
 
@@ -74,16 +82,25 @@ void program_finished(){
   printf("Program Finished!\n");
   // exit(-1);
   siglongjmp(list_of_threads[0].env,1);
-
 }
 
 void get_next_thread(){
 
-      next_thread++;
+  int salio = 0;
 
-      if (next_thread==Number_Of_Threads-1 && list_of_threads[next_thread-1].state == 0 ){
-        next_thread--;
+      for (size_t i = 1; i < Number_Of_Threads - 1; i++) {
+        if(list_of_threads[i].state != FINISHED){
+          next_thread = i;
+          salio = 1;
+          break;
+        }
       }
+
+      if(!salio) next_thread = Number_Of_Threads - 1;
+
+      // if (next_thread==Number_Of_Threads-1 && list_of_threads[next_thread-1].state == 0 ){
+      //   next_thread--;
+      // }
 
   //    next_thread = queue_thread[0];
 
@@ -96,8 +113,7 @@ void Scheduler() {
 	if(coming_back == 1){return;}
 
   get_next_thread();
-
-	current_thread = list_of_threads[next_thread];
+  current_thread = list_of_threads[next_thread];
 
 	if(current_thread.id != Number_Of_Threads-1){
 		siglongjmp(current_thread.env, 1);
@@ -109,7 +125,7 @@ program_finished(); //Finaliza el programa si current_id llego a ser el ultimo.
 
 void Thread_finished(){
   printf("Termine un thread\n");
-  current_thread.state = 1;
+  current_thread.state = FINISHED;
   save_current_state();
   Scheduler();
 }
@@ -147,7 +163,7 @@ void create_hilo(void *function, struct thread_metadata data) {
   list_of_threads[thread_counter].id = thread_counter;
   list_of_threads[thread_counter].function = function;
   list_of_threads[thread_counter].data = data;
-  list_of_threads[thread_counter].state = 0;
+  list_of_threads[thread_counter].state = READY;
   list_of_threads[thread_counter].data.result = 0;
   list_of_threads[thread_counter].data.bills = 0;
 
