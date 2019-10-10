@@ -56,7 +56,7 @@ void final(void) {
   for (size_t i = 1; i < Number_Of_Threads-1; i++) {
     printf("Resultado en Hilo (%d) es %d\n",  list_of_threads[i].id, list_of_threads[i].result);
   }
-  siglongjmp(list_of_threads[0].env,1);
+  exit(-1);
 }
 
 

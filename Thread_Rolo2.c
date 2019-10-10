@@ -107,15 +107,15 @@ int main(){
   struct thread_metadata thread_3;
 
   thread_1.workload = 50;
-  thread_1.workload = 250;
-  thread_1.workload = 150;
+  thread_2.workload = 250;
+  thread_3.workload = 150;
 
     create_hilo(sumador, thread_1);
     create_hilo(sumador, thread_2);
     create_hilo(sumador, thread_3);
 
 
-    current_thread = list_of_threads[0];
+    current_thread = list_of_threads[1];
 
     siglongjmp(current_thread.env,1);
     return 0;
