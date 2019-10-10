@@ -31,6 +31,8 @@ struct threads_type{
   struct thread_metadata data;
 };
 
+int queue_thread[3] = {2, 1, 3};
+
 struct threads_type list_of_threads[Number_Of_Threads];
 struct threads_type current_thread;
 
@@ -79,18 +81,15 @@ void get_next_thread(){
 
       next_thread++;
 
-      //El main esta hecho para que el hilo 1 termine de primero. Y esta logica esta hecha para forzar que
-      //se devuelva al hilo 2 hasta que el termine.
-
-      //tonto pero prueba mi punto.
-
       if (next_thread==Number_Of_Threads-1 && list_of_threads[next_thread-1].state == 0 ){
         next_thread--;
       }
 
+  //    next_thread = queue_thread[0];
+
 }
 
-void thread_switcher() {
+void Scheduler() {
 
   int coming_back = sigsetjmp(list_of_threads[current_thread.id].env,1);
 
@@ -108,14 +107,13 @@ program_finished(); //Finaliza el programa si current_id llego a ser el ultimo.
 
 }
 
-void LS_Scheduler(){
-  thread_switcher();
-}
 
-void thread_finished(){
-  printf("termine un thread\n");
+
+void Thread_finished(){
+  printf("Termine un thread\n");
+  current_thread.state = 1;
   save_current_state();
-  thread_switcher();
+  Scheduler();
 }
 
 
@@ -123,7 +121,7 @@ void thread_finished(){
 void signal_handler(){
 	printf("\nTiempo expiró, saltando hilo\n\n");
   save_current_state();
-  LS_Scheduler();
+  Scheduler();
 }
 
 void sumador(void){
@@ -136,12 +134,11 @@ void sumador(void){
       for (int b = 0; b < 5; b++) {
         current_thread.data.result++;
         printf("Resultado de Pi = (%d) en hilo (%d)\n",current_thread.data.result, current_thread.id);
-  //      sleep(TIME_TO_SLEEP);
+        sleep(TIME_TO_SLEEP);
       }
       current_thread.data.workload--;
     }
-    current_thread.state = 1;
-    thread_finished();
+    Thread_finished();
 }
 
 
@@ -205,7 +202,7 @@ int main(){
   create_hilo(sumador, thread_2);
   create_hilo(final, thread_4);
 
-  LS_Scheduler();
+  Scheduler();
 
   printf("\nExecution finished, message from  main.\n");
   return 0;
