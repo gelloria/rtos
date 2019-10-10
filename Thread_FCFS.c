@@ -29,7 +29,7 @@ struct threads_type previous_thread;
 
 void FCFS_Scheduler(){
    if (next_thread == Number_Of_Threads) {
-     next_thread = Number_Of_Threads;
+     next_thread = Number_Of_Threads-1;
    } else {
      next_thread = current_thread.id+1;
    }

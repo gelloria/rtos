@@ -40,8 +40,12 @@ void timer_quantum(int quantum_ms, void *function){
    timer.it_interval.tv_sec = sec;
    timer.it_interval.tv_usec = usec;
 
-	signal(SIGALRM, function);
+	if(function != NULL) {signal(SIGALRM, function);}
 	setitimer(ITIMER_REAL, &timer, NULL);
+}
+
+void stop_timer(){
+  timer_quantum(0, NULL);
 }
 
 struct threads_type list_of_threads[Number_Of_Threads];
@@ -71,9 +75,12 @@ void sumador(void){
 
     timer_quantum(QUANTUM, signal_handler);
 
-    while(1) {
+    while(i<20) {
         ++i;
         printf("Sumando (%d) en hilo (%d)\n",i, current_thread.id);
+        if (i==9){
+          stop_timer();
+        }
         usleep(TIME_TO_SLEEP);
     }
 }
