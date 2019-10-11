@@ -58,6 +58,7 @@ void timer_quantum(int quantum_ms, void *function){
 
 	if(function != NULL) {signal(SIGALRM, function);}
 	setitimer(ITIMER_REAL, &timer, NULL);
+
 }
 
 void save_current_state(){
@@ -176,12 +177,17 @@ void sumador(void){
         // printf("Resultado de Pi = (%d) en hilo (%d)\n",current_thread.data.result, current_thread.id);
         // sleep(TIME_TO_SLEEP);
 
-        numerador = factorial(2*n) * pow(1, 2*n+1);
-        denominador = pow(2, 2*n) * pow(factorial(n), 2) * (2*n + 1);
+        //    numerador = factorial(2*n) * pow(x, 2*n+1);
+        //    denominador = pow(2, 2*n) * pow(factorial(n), 2) * (2*n + 1);
+
+        numerador = 2*pow(-1, n);
+        denominador = (1+2*n);
         //printf("NUMERADOR %Lf \n", numerador);
         //printf("DENOMINADOR %Lf \n", denominador);
         result += numerador / denominador;
+
       }
+
       //current_thread.data.workload--;
 
     current_thread.data.result = result*2;
@@ -242,8 +248,8 @@ int main(){
   struct thread_metadata thread_2;
   struct thread_metadata thread_4;
 
-  thread_1.workload = 17;
-  thread_2.workload = 2;
+  thread_1.workload = 100000;
+  thread_2.workload = 3;
 
   create_hilo(sumador, thread_1);
   create_hilo(sumador, thread_2);
