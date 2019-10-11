@@ -7,10 +7,11 @@
 #include <sys/time.h>
 #include "mythreads.c"
 #include <stdlib.h>
+#include <math.h>
 
 #define Number_Of_Threads 4
 #define TIME_TO_SLEEP 1
-#define STACK_SIZE 40096
+#define STACK_SIZE 80096
 #define QUANTUM 2000 //ms
 
 int thread_counter = 0;
@@ -19,7 +20,7 @@ int next_thread = 0;
 struct thread_metadata {
   int bills;
   int workload;
-  int result;
+  long double result;
 };
 
 enum thread_state {
@@ -38,8 +39,6 @@ struct threads_type{
   enum thread_state state;
   struct thread_metadata data;
 };
-
-int queue_thread[3] = {2, 1, 3};
 
 struct threads_type list_of_threads[Number_Of_Threads];
 struct threads_type current_thread;
@@ -137,20 +136,55 @@ void signal_handler(){
   Scheduler();
 }
 
+// function to find factorial of given number
+long double factorial(int n)
+{
+    if (n == 0)
+      return 1;
+
+    return n * factorial(n - 1);
+}
+
+/*
+long double arcsen(int x) {
+  long double result = 0, numerador = 0, denominador = 0;
+
+    // TODO: Este numero deberia de ser variable
+    for (int n = 0; n < 878; n++) {
+      //result+=(factorial(2*n) * 2*x**(2*n+1))/(   (2**(2*n))   *   (factorial(n)**2)  *  (2*n + 1));
+      //result+=(factorial(2*n) * 2*pow(x, 2*n+1))/(   (pow(2, 2*n))   *   (pow(factorial(n), 2))  *  (2*n + 1));
+      numerador = factorial(2*n) * pow(x, 2*n+1);
+      denominador = pow(2, 2*n) * pow(factorial(n), 2) * (2*n + 1);
+      //printf("NUMERADOR %Lf \n", numerador);
+      //printf("DENOMINADOR %Lf \n", denominador);
+      result += numerador / denominador;
+    }
+
+  return result;
+}
+*/
+
 void sumador(void){
 
     int count = current_thread.data.workload;
+    long double result = 0, numerador = 0, denominador = 0;
 
     timer_quantum(QUANTUM, signal_handler);
 
-    for (int a = 0; a < count; a++) {
-      for (int b = 0; b < 5; b++) {
-        current_thread.data.result++;
-        printf("Resultado de Pi = (%d) en hilo (%d)\n",current_thread.data.result, current_thread.id);
-        sleep(TIME_TO_SLEEP);
+      for (int n = 0; n < count*50; n++) {
+        // current_thread.data.result++;
+        // printf("Resultado de Pi = (%d) en hilo (%d)\n",current_thread.data.result, current_thread.id);
+        // sleep(TIME_TO_SLEEP);
+
+        numerador = factorial(2*n) * pow(1, 2*n+1);
+        denominador = pow(2, 2*n) * pow(factorial(n), 2) * (2*n + 1);
+        //printf("NUMERADOR %Lf \n", numerador);
+        //printf("DENOMINADOR %Lf \n", denominador);
+        result += numerador / denominador;
       }
-      current_thread.data.workload--;
-    }
+      //current_thread.data.workload--;
+
+    current_thread.data.result = result*2;
     Thread_finished();
 }
 
@@ -208,7 +242,7 @@ int main(){
   struct thread_metadata thread_2;
   struct thread_metadata thread_4;
 
-  thread_1.workload = 1;
+  thread_1.workload = 17;
   thread_2.workload = 2;
 
   create_hilo(sumador, thread_1);
@@ -218,5 +252,8 @@ int main(){
   Scheduler();
 
   printf("\nExecution finished, message from  main.\n");
+
+  fprintf(stderr, "Result 1 %.70Lf\n", list_of_threads[1].data.result);
+  fprintf(stderr, "Result 2 %.70Lf\n", list_of_threads[2].data.result);
   return 0;
 }
