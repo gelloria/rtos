@@ -7,11 +7,12 @@
 #include <sys/time.h>
 #include "mythreads.c"
 #include <stdlib.h>
+#include <math.h>
 
 #define Number_Of_Threads 4
 #define TIME_TO_SLEEP 1
 #define STACK_SIZE 40096
-#define QUANTUM 2000 //ms
+#define QUANTUM 200 //ms
 
 int thread_counter = 0;
 int next_thread = 0;
@@ -19,7 +20,7 @@ int next_thread = 0;
 struct thread_metadata {
   int bills;
   int workload;
-  int result;
+  long double result;
 };
 
 enum thread_state {
@@ -41,6 +42,25 @@ struct threads_type{
 
 struct threads_type list_of_threads[Number_Of_Threads];
 struct threads_type current_thread;
+
+// function to find factorial of given number
+long double factorial(int n)
+{
+    if (n == 0)
+      return 1;
+
+    return n * factorial(n - 1);
+}
+
+long double arcsen(int x) {
+  long double result = 0, numerador = 0, denominador = 0;
+    // TODO: Este numero deberia de ser variable
+    for (int n = 0; n < 100000; n++) {
+      result+= ( pow(-1, n) / (1+2*n));
+    }
+
+  return result;
+}
 
 void timer_quantum(int quantum_ms, void *function){
 	struct itimerval timer;
@@ -79,7 +99,7 @@ int rand_range(int low, int up){
 void program_finished(){
   printf("Program Finished!\n");
   for (int i = 1; i < Number_Of_Threads; i++) {
-    printf("Resultado final del Thread %d es %d.\n", list_of_threads[i].id, list_of_threads[i].data.result );
+    printf("Resultado final del Thread %d es %.30Lf.\n", list_of_threads[i].id, list_of_threads[i].data.result );
   }
   siglongjmp(list_of_threads[0].env,1);
 }
@@ -157,12 +177,15 @@ void signal_handler(){
 void sumador(void){
     int count = current_thread.data.workload;
     timer_quantum(QUANTUM, signal_handler);
-    for (int a = 0; a < count; a++) {
-      current_thread.data.result++;
-      printf("Resultado de Pi = (%d) en hilo (%d)\n",current_thread.data.result, current_thread.id);
-      sleep(TIME_TO_SLEEP);
-      current_thread.data.workload--;
-    }
+    long double result = 0;
+      // TODO: Este numero deberia de ser variable
+      for (int n = 0; n < count; n++) {
+        current_thread.data.result += ( pow(-1, n) / (1+2*n));
+        // printf("Resultado de Pi = (%.30Lf) en hilo (%d)\n",current_thread.data.result, current_thread.id);
+        // sleep(TIME_TO_SLEEP);
+        // current_thread.data.workload--;
+      }
+      current_thread.data.result= current_thread.data.result*4;
     Thread_finished();
 }
 
@@ -215,15 +238,15 @@ int main(){
   // Thread 4 = final
   struct thread_metadata thread_4;
 
-  thread_1.workload = 6;
-  thread_1.bills = 6;
+  thread_1.workload = 1000;
+  thread_1.bills = 1;
   thread_1.result = 0;
 
-  thread_2.workload = 3;
+  thread_2.workload = 10000;
   thread_2.bills = 1;
   thread_2.result = 0;
 
-  thread_3.workload = 5;
+  thread_3.workload = 100000;
   thread_3.bills = 1;
   thread_3.result = 0;
 
