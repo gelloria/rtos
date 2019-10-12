@@ -9,13 +9,17 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define Number_Of_Threads 4
+#define MAX_THREAD_NUMBER 26
 #define TIME_TO_SLEEP 1
 #define STACK_SIZE 40096
-#define QUANTUM 200 //ms
+#define QUANTUM 100 //ms
 
 int thread_counter = 0;
 int next_thread = 0;
+int number_of_threads;
+int algorithm;
+int thread_workloads[MAX_THREAD_NUMBER];
+int thread_bills[MAX_THREAD_NUMBER];
 
 struct thread_metadata {
   int bills;
@@ -40,12 +44,12 @@ struct threads_type{
   struct thread_metadata data;
 };
 
-struct threads_type list_of_threads[Number_Of_Threads];
+
+struct threads_type list_of_threads[MAX_THREAD_NUMBER];
 struct threads_type current_thread;
 
 // function to find factorial of given number
-long double factorial(int n)
-{
+long double factorial(int n){
     if (n == 0)
       return 1;
 
@@ -96,14 +100,14 @@ int rand_range(int low, int up){
 }
 
 void program_finished(){
-  printf("Program Finished!\n");
-  for (int i = 1; i < Number_Of_Threads; i++) {
-    printf("Resultado final del Thread %d es %.30Lf.\n", list_of_threads[i].id, list_of_threads[i].data.result );
+  printf("\nNo More Threads!\n\n");
+  for (int i = 1; i < number_of_threads+1; i++) {
+    printf("Final result of Thread #%d is %.30Lf.\n", list_of_threads[i].id, list_of_threads[i].data.result );
   }
   siglongjmp(list_of_threads[0].env,1);
 }
 
-void get_next_thread(){
+void get_next_thread_1(){
 
   int j=0;
   int rand_num = 0;
@@ -111,8 +115,9 @@ void get_next_thread(){
   int total_bills = 0;
   int available_bills[100];
 
+
   // Get available threads and bills
-  for (int i = 1; i < Number_Of_Threads; i++) {
+  for (int i = 1; i < number_of_threads+1; i++) {
     if(list_of_threads[i].state != FINISHED){
       total_bills +=list_of_threads[i].data.bills;
       // Builds an array of bills with thread_ids
@@ -122,16 +127,16 @@ void get_next_thread(){
       }
     }
   }
-  printf("total_amount_tickets = %d\n", total_bills);
+//  printf("total_amount_tickets = %d\n", total_bills);
 
-  printf("total_bills = { " );
-  for (int y = 0; y < total_bills; y++) {
-    printf("%d, ", available_bills[y]);
-  }
-  printf(" } \n");
+//  printf("total_bills = { " );
+  // for (int y = 0; y < total_bills; y++) {
+  //   printf("%d, ", available_bills[y]);
+  // }
+  // printf(" } \n");
 
   if (total_bills == 0) {
-    next_thread = Number_Of_Threads;
+    next_thread = MAX_THREAD_NUMBER;
   }else{
     // Lottery bill trow
     srand(time(0));
@@ -139,7 +144,16 @@ void get_next_thread(){
     next_thread = available_bills[rand_num];
   }
 
-  printf("next_thread will be = %d\n", next_thread);
+//  printf("next_thread will be = %d\n", next_thread);
+}
+
+void get_next_thread_2(){
+  next_thread++;
+
+  if (next_thread == number_of_threads+1) {
+    next_thread = MAX_THREAD_NUMBER;
+  }
+  stop_timer();
 }
 
 void Scheduler() {
@@ -148,51 +162,53 @@ void Scheduler() {
 
 	if(coming_back == 1){return;}
 
-  get_next_thread();
+  if (algorithm == 1) {
+    get_next_thread_1();
+  } else {
+    get_next_thread_2();
+  }
+
   current_thread = list_of_threads[next_thread];
 
-  if (next_thread == Number_Of_Threads) {
+  if (next_thread == MAX_THREAD_NUMBER) {
     program_finished(); //Finaliza el programa si current_id llego a ser el ultimo.
   } else {
+    printf("Running Thread (%d)", current_thread.id);
     siglongjmp(current_thread.env, 1);
   }
 
 }
 
 void Thread_finished(){
-  printf("Termine un thread\n");
+  printf(" -> Thread (%d) Finished!\n", current_thread.id);
   current_thread.state = FINISHED;
   save_current_state();
   Scheduler();
 }
 
 void signal_handler(){
-	printf("\nTiempo expiró, saltando hilo\n\n");
+	printf(" -> Time expired, jumping to next thread!, Partial Result = %LF\n\n", current_thread.data.result);
   save_current_state();
   Scheduler();
 }
 
-void sumador(void){
+
+void compute_arcsin(void){
     int count = current_thread.data.workload;
     timer_quantum(QUANTUM, signal_handler);
     long double result = 0;
-      // TODO: Este numero deberia de ser variable
-      for (int n = 0; n < count; n++) {
-        current_thread.data.result += ( pow(-1, n) / (1+2*n));
-        // printf("Resultado de Pi = (%.30Lf) en hilo (%d)\n",current_thread.data.result, current_thread.id);
-        // sleep(TIME_TO_SLEEP);
-        // current_thread.data.workload--;
+      for (int n = 0; n < 50*count; n++) {
+        current_thread.data.result += ( 2*pow(-1, n) / (1+2*n));
       }
-      current_thread.data.result= current_thread.data.result*4;
+      current_thread.data.result= current_thread.data.result*2;
     Thread_finished();
 }
-
 
 void create_hilo(void *function, struct thread_metadata data) {
   thread_counter++;
   address_t sp, pc;
 
-  printf("Creando Hilo %d\n", thread_counter);
+//  printf("Creating Thread = %d\n", thread_counter);
 
   list_of_threads[thread_counter].id = thread_counter;
   list_of_threads[thread_counter].function = function;
@@ -209,7 +225,6 @@ void create_hilo(void *function, struct thread_metadata data) {
 }
 
 void setup(void) {
-  printf("Creando Hilo del main, ID = %d\n", thread_counter);
 
   list_of_threads[thread_counter].id = thread_counter;
   list_of_threads[thread_counter].function = NULL;
@@ -219,27 +234,80 @@ void setup(void) {
 
 }
 
-int main(){
+int menu( int argc, char **argv, char **in_file){
+	int option_index = 0;
+  FILE *fp;
+	while (( option_index = getopt(argc, argv, ":f:a:h")) != -1){
+		switch (option_index) {
+			case 'f':
+        fp = fopen(optarg, "r");
+        if(fp == NULL){
+            printf("Error opening file\n");
+            exit(1);
+        }
+        fscanf(fp, "Algorithm = %d\n\nNumber_Of_Threads = %d", &algorithm, &number_of_threads);
+
+        if (algorithm == 1) {
+          printf("Using Lottery Scheduler - Number of Threads = %d\n\n" , number_of_threads);
+        } else if (algorithm == 1){
+            printf("Using FCFS - Number of Threads = (%d)\n\n" , number_of_threads);
+        }
+          else {
+            printf("Invalid Scheduling Algorithim: Using Lottery Scheduler as default\n");
+            algorithm = 1;
+          }
+
+				for (int i = 0; i < number_of_threads; i++){
+		        fscanf(fp, "%d,", &thread_bills[i] );
+		    }
+
+				for (int i = 0; i < number_of_threads; i++){
+						fscanf(fp, "%d,", &thread_workloads[i] );
+				}
+        // for (int i = 0; i < number_of_threads; i++){
+        //     printf("thread_bills is: %d\n", thread_bills[i]);
+        // }
+				// for (int i = 0; i < number_of_threads; i++){
+				// 		printf("thread_workload is: %d\n", thread_workloads[i]);
+				// }
+        fclose(fp);
+
+				break;
+			case 'a':
+				printf("Authors of the program:\n\tLeonardo Araya\n\tGabriel Loria\n\tRolando Moraga\n");
+				break;
+			case 'h':
+				printf("Use '-f configuration_file' to set the configuration file.\n");
+				return 1;
+				break;
+			default:
+				printf("Not recognized option. Please use '-h' for help.\n");
+				return 1;
+		}
+	}
+	return 0;
+}
+
+int main(int argc, char **argv){
+
+  char *config_file_name;
+	int status = 0;
+
+	status = menu(argc,argv, &config_file_name);
+	if (status) {
+    printf("Status is %d\n", status);
+		return status;
+	}
 
   setup();
-  struct thread_metadata thread_generic[Number_Of_Threads];
+  struct thread_metadata thread_generic_tmp;
 
 
-  thread_generic[1].workload = 1000;
-  thread_generic[1].bills = 1;
-  thread_generic[1].result = 0;
-
-  thread_generic[2].workload = 80;
-  thread_generic[2].bills = 1;
-  thread_generic[2].result = 0;
-
-  thread_generic[3].workload = 2;
-  thread_generic[3].bills = 1;
-  thread_generic[3].result = 0;
-
-
-  for (size_t i = 1; i < Number_Of_Threads; i++) {
-    create_hilo(sumador, thread_generic[i]);
+  for (size_t i = 1; i < number_of_threads+1; i++) {
+    thread_generic_tmp.workload = thread_workloads[i-1];
+    thread_generic_tmp.bills = thread_bills[i-1];
+    thread_generic_tmp.result = 0;
+    create_hilo(compute_arcsin, thread_generic_tmp);
   }
 
 

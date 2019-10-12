@@ -11,9 +11,10 @@
 int menu( int argc, char **argv, char **in_file){
 	int option_index = 0;
   FILE *fp;
-  char name[50];
-  char last[50];
-  int id = 0;
+  char algorithm[50];
+	int thread_bills[10];
+	int thread_workload[10];
+  int number_of_threads;
 	while (( option_index = getopt(argc, argv, ":f:a:h")) != -1){
 		switch (option_index) {
 			case 'f':
@@ -22,9 +23,22 @@ int menu( int argc, char **argv, char **in_file){
             printf("Error opening file\n");
             exit(1);
         }
-        while( fscanf(fp, "Name = %s\nLast = %s\nId = %d\n", name, last, &id) != EOF ){
-            printf("Name is %s\nLast is %s\nId is %d\n", name, last, id);
-        }
+        fscanf(fp, "Algorithm = %s\nNumber_Of_Threads = %d", algorithm, &number_of_threads);
+        printf("Algorithm is %s\nNumber Of Threads is %d\n", algorithm, number_of_threads);
+
+				for (int i = 0; i < 10; i++){
+		        fscanf(fp, "%d,", &thread_bills[i] );
+		    }
+				for (int i = 0; i < 10; i++){
+						printf("thread_bills is: %d\n", thread_bills[i]);
+				}
+
+				for (int i = 0; i < 10; i++){
+						fscanf(fp, "%d,", &thread_workload[i] );
+				}
+				for (int i = 0; i < 10; i++){
+						printf("thread_workload is: %d\n", thread_workload[i]);
+				}
         fclose(fp);
 
 				break;
@@ -53,6 +67,8 @@ int main(int argc, char **argv){
 		// fprintf(stderr, "status :%d\n", status);
 		return status;
 	}
+
+
 
   printf("Hello, World!");
 
