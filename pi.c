@@ -14,7 +14,7 @@ int menu( int argc, char **argv, char **in_file){
   char name[50];
   char last[50];
   int id = 0;
-	while (( option_index = getopt(argc, argv, "i:o:ha")) != -1){
+	while (( option_index = getopt(argc, argv, ":f:a:h")) != -1){
 		switch (option_index) {
 			case 'f':
         fp = fopen(optarg, "r");
