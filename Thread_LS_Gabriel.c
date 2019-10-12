@@ -58,7 +58,6 @@ long double arcsen(int x) {
     for (int n = 0; n < 100000; n++) {
       result+= ( pow(-1, n) / (1+2*n));
     }
-
   return result;
 }
 
@@ -132,7 +131,7 @@ void get_next_thread(){
   printf(" } \n");
 
   if (total_bills == 0) {
-    next_thread = 4;
+    next_thread = Number_Of_Threads;
   }else{
     // Lottery bill trow
     srand(time(0));
@@ -152,7 +151,7 @@ void Scheduler() {
   get_next_thread();
   current_thread = list_of_threads[next_thread];
 
-  if (next_thread ==4) {
+  if (next_thread == Number_Of_Threads) {
     program_finished(); //Finaliza el programa si current_id llego a ser el ultimo.
   } else {
     siglongjmp(current_thread.env, 1);
@@ -166,7 +165,6 @@ void Thread_finished(){
   save_current_state();
   Scheduler();
 }
-
 
 void signal_handler(){
 	printf("\nTiempo expiró, saltando hilo\n\n");
@@ -221,39 +219,29 @@ void setup(void) {
 
 }
 
-void final(void) {
-  printf("Final\n");
-  exit(-1);
-}
-
-
 int main(){
 
   setup();
-  // thread 0 = setup
-  //Thread 1-3 = operaciones
-  struct thread_metadata thread_1;
-  struct thread_metadata thread_2;
-  struct thread_metadata thread_3;
-  // Thread 4 = final
-  struct thread_metadata thread_4;
+  struct thread_metadata thread_generic[Number_Of_Threads];
 
-  thread_1.workload = 1000;
-  thread_1.bills = 1;
-  thread_1.result = 0;
 
-  thread_2.workload = 10000;
-  thread_2.bills = 1;
-  thread_2.result = 0;
+  thread_generic[1].workload = 1000;
+  thread_generic[1].bills = 1;
+  thread_generic[1].result = 0;
 
-  thread_3.workload = 100000;
-  thread_3.bills = 1;
-  thread_3.result = 0;
+  thread_generic[2].workload = 80;
+  thread_generic[2].bills = 1;
+  thread_generic[2].result = 0;
 
-  create_hilo(sumador, thread_1);
-  create_hilo(sumador, thread_2);
-  create_hilo(sumador, thread_3);
-  create_hilo(final, thread_4);
+  thread_generic[3].workload = 2;
+  thread_generic[3].bills = 1;
+  thread_generic[3].result = 0;
+
+
+  for (size_t i = 1; i < Number_Of_Threads; i++) {
+    create_hilo(sumador, thread_generic[i]);
+  }
+
 
   Scheduler();
 
