@@ -38,8 +38,9 @@ int gtk_model_initialize(){
   return GUI_OK;
 }
 
-void * generate_entries(){
+gboolean generate_entries (gpointer user_data){
   // Create an entry in the table
+  /*
   insert_table_entry(1, 3.14, "Running");
   sleep(3);
   insert_table_entry(2, 3.14, "Waiting");
@@ -50,9 +51,18 @@ void * generate_entries(){
 
   sleep(3);
   insert_table_clear();
+  */
+  printf("%s\n", "LALLA 1 ");
+  printf("%s\n", "LALLA 2 ");
+  printf("%s\n", "LALLA 3 ");
+  printf("%s\n", "LALLA 4 ");
+  
+
+  return TRUE;
+
 }
 
-int gtk_view_initialize(){
+int gtk_view_initialize(void* function_ptr){
   GtkWidget*         view;
   GtkTreeViewColumn* column;
   GtkWidget*         window;
@@ -90,22 +100,12 @@ int gtk_view_initialize(){
   window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_container_add(GTK_CONTAINER(window), view);
   gtk_widget_show_all(window);
+  //insert_table_entry(4, 3.14, "Waiting");
 
-  g_thread_new("", generate_entries, NULL);
-  // Anadir timeout
+  g_thread_new("", function_ptr, NULL);
+
+  g_timeout_add(16, generate_entries, window);
   gtk_main();
-
-  return GUI_OK;
-}
-
-int main(gint argc, gchar **argv)
-{
-  // Initialize GTK
-  gtk_initialize(argc, argv);
-  gtk_model_initialize();
-
-  // Initialize the GUI
-  gtk_view_initialize();
 
   return GUI_OK;
 }

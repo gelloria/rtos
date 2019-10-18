@@ -21,6 +21,6 @@ int gtk_initialize(gint argc, gchar **argv);
 
 int gtk_model_initialize();
 
-void * generate_entries();
+gboolean generate_entries (gpointer user_data);
 
-int gtk_view_initialize();
+int gtk_view_initialize(void* function_ptr);
