@@ -1,6 +1,11 @@
 #include "mylib.h"
+#include "gui.h"
 
-int work_limit = 2;
+void sleepsec(int n) {
+	for (size_t i = 0; i < n; i++) {
+		//HELLO WORLD
+	}
+}
 
 void timer_quantum(int quantum_ms, void *function){
 	struct itimerval timer;
@@ -21,7 +26,7 @@ void timer_quantum(int quantum_ms, void *function){
 
 void compute_arcsin(void){
     int count = current_thread.data.workload;
-    // timer_quantum(Quamtum, signal_handler);
+    // timer_quantum(quantum, signal_handler);
     long double result = 0;
 
     int y = 0;
@@ -31,12 +36,13 @@ void compute_arcsin(void){
         // numerador = factorial(2*n) * pow(x, 2*n+1);
         // denominador = pow(2, 2*n) * pow(factorial(n), 2) * (2*n + 1);
         current_thread.data.result += 2*( 2*pow(-1, y) / (1+2*y));
+				sleepsec(1000);
         y++;
         // current_thread.data.result += numerador / denominador;
       }
       if ( ((i+1)%work_limit == 0) && (algorithm == 1) && (opt_mode == 0)) {
-          printf("Current Workload(%d)\n", i);
-          printf("Workload expired, jumping to next thread!, Partial Result = %.30LF\n\n", current_thread.data.result);
+          printf("Current Workload (%d) , Workload Expired!\n", i);
+          printf("Workload expired, jumping to next thread!, Partial Result = %LF\n\n", current_thread.data.result);
           save_current_state();
           Scheduler();
       }
@@ -59,6 +65,7 @@ void stop_timer(){
 }
 
 int rand_range(int low, int up){
+	srand(time(0));
   return (rand() %(up - low + 1)) + low;
 }
 
@@ -76,7 +83,8 @@ void get_next_thread_1(){
   int rand_num = 0;
   int winner_bill=  0;
   int total_bills = 0;
-  int available_bills[100];
+  int available_bills[TOTAL_TICKETS_AMOUNT];
+
 
 
   // Get available threads and bills
@@ -90,26 +98,25 @@ void get_next_thread_1(){
       }
     }
   }
-//  printf("total_amount_tickets = %d\n", total_bills);
+// printf("total_amount_tickets = %d\n", total_bills);
 
-//  printf("total_bills = { " );
-  // for (int y = 0; y < total_bills; y++) {
-  //   printf("%d, ", available_bills[y]);
-  // }
-  // printf(" } \n");
+/*  printf("total_bills = { " );
+  for (int y = 0; y < total_bills; y++) {
+    printf("%d, ", available_bills[y]);
+  }
+  printf(" } \n"); */
 
   if (total_bills == 0) {
     next_thread = MAX_THREAD_NUMBER;
   }else{
     // Lottery bill trow
-    srand(time(0));
     rand_num = rand_range(0, total_bills-1);
     next_thread = available_bills[rand_num];
   }
 
-//  printf("next_thread will be = %d\n", next_thread);
+ // printf("next_thread will be = %d\n", next_thread);
   if (opt_mode==1) {
-    timer_quantum(Quamtum, signal_handler);
+    timer_quantum(quantum, signal_handler);
   }
 
 }
@@ -143,7 +150,7 @@ void get_next_thread_2(){
 }
 
 void signal_handler(){
-	printf(" -> Time expired, jumping to next thread!, Partial Result = %.30LF\n\n", current_thread.data.result);
+	printf(" -> Time expired, jumping to next thread!, Partial Result = %.5LF\n\n", current_thread.data.result);
   save_current_state();
   Scheduler();
 }
@@ -160,12 +167,11 @@ void Scheduler() {
     get_next_thread_2();
   }
 
-  current_thread = list_of_threads[next_thread];
-
   if (next_thread == MAX_THREAD_NUMBER) {
     program_finished(); //Finaliza el programa si current_id llego a ser el ultimo.
   } else {
-    printf("Running Thread (%d)\n", current_thread.id);
+		current_thread = list_of_threads[next_thread];
+    printf("Running Thread (%d) ", current_thread.id);
     siglongjmp(current_thread.env, 1);
   }
 
@@ -209,6 +215,7 @@ void setup(void) {
 
 int menu( int argc, char **argv, char **in_file){
 	int option_index = 0;
+	int total_amount_tickets = 0;
   FILE *fp;
 	while (( option_index = getopt(argc, argv, ":f:a:h")) != -1){
 		switch (option_index) {
@@ -218,12 +225,13 @@ int menu( int argc, char **argv, char **in_file){
             printf("Error opening file\n");
             exit(1);
         }
-        fscanf(fp, "Algorithm = %d\nNumber_Of_Threads = %d\nOperation_Mode = %d\nQuamtum = %d", &algorithm, &number_of_threads, &opt_mode, &Quamtum);
+        fscanf(fp, "Algorithm = %d\nNumber_Of_Threads = %d\nOperation_Mode = %d\nQuantum = %d\nWorkload_Fraction = %d", &algorithm, &number_of_threads, &opt_mode, &quantum, &work_limit);
 
-        // if (4 >= number_of_threads || number_of_threads >= MAX_THREAD_NUMBER) {
-        //   printf("Digite una cantidad de hilos entre 5 y 25\n");
-        //   exit(1);
-        // }
+				//Number of thread sanity checks
+        if (4 >= number_of_threads || number_of_threads >= MAX_THREAD_NUMBER) {
+          printf("Digite una cantidad de hilos entre 5 y 25\n");
+          exit(1);
+        }
 
         if (algorithm == 1) {
           printf("Using Lottery Scheduler - Number of Threads = %d\n\n" , number_of_threads);
@@ -237,17 +245,19 @@ int menu( int argc, char **argv, char **in_file){
 
 				for (int i = 0; i < number_of_threads; i++){
 		        fscanf(fp, "%d,", &thread_bills[i] );
+						total_amount_tickets += thread_bills[i];
 		    }
+
+				//Bills tickets sanity checks
+				if (TOTAL_TICKETS_AMOUNT <= total_amount_tickets) {
+          printf("La maxima cantidad de tiquetes es %d, la cantidad de tiquites actual es: %d\n", TOTAL_TICKETS_AMOUNT, total_amount_tickets);
+          exit(1);
+        }
 
 				for (int i = 0; i < number_of_threads; i++){
 						fscanf(fp, "%d,", &thread_workloads[i] );
 				}
-        // for (int i = 0; i < number_of_threads; i++){
-        //     printf("thread_bills is: %d\n", thread_bills[i]);
-        // }
-				// for (int i = 0; i < number_of_threads; i++){
-				// 		printf("thread_workload is: %d\n", thread_workloads[i]);
-				// }
+
         fclose(fp);
 
 				break;
@@ -278,19 +288,26 @@ int main(int argc, char **argv){
 		return status;
 	}
 
+
   setup();
   struct thread_metadata thread_generic_tmp;
 
+	for (size_t i = 1; i < number_of_threads+1; i++) {
+		thread_generic_tmp.workload = thread_workloads[i-1];
+	  thread_generic_tmp.bills = thread_bills[i-1];
+		thread_generic_tmp.result = 0;
+		create_hilo(compute_arcsin, thread_generic_tmp);
+	}
 
-  for (size_t i = 1; i < number_of_threads+1; i++) {
-    thread_generic_tmp.workload = thread_workloads[i-1];
-    thread_generic_tmp.bills = thread_bills[i-1];
-    thread_generic_tmp.result = 0;
-    create_hilo(compute_arcsin, thread_generic_tmp);
-  }
+	// Initialize GTK
+	gtk_initialize(argc, argv);
+	gtk_model_initialize();
 
+	// Initialize the GUI
+	gtk_view_initialize(&Scheduler);
 
-  Scheduler();
+  //Scheduler();
+
 
   printf("\nExecution finished, message from  main.\n");
   return 0;

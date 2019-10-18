@@ -52,17 +52,18 @@ gboolean generate_entries (gpointer user_data){
   sleep(3);
   insert_table_clear();
   */
-  printf("%s\n", "LALLA 1 ");
-  printf("%s\n", "LALLA 2 ");
-  printf("%s\n", "LALLA 3 ");
-  printf("%s\n", "LALLA 4 ");
-  
+  // printf("%s\n", "LALLA 1 ");
+  // printf("%s\n", "LALLA 2 ");
+  // printf("%s\n", "LALLA 3 ");
+  // printf("%s\n", "LALLA 4 ");
+
+  // insert_table_entry(4, 3.14, "Waiting");
 
   return TRUE;
 
 }
 
-int gtk_view_initialize(void* function_ptr){
+int gtk_view_initialize(void *function_ptr){
   GtkWidget*         view;
   GtkTreeViewColumn* column;
   GtkWidget*         window;
@@ -102,10 +103,15 @@ int gtk_view_initialize(void* function_ptr){
   gtk_widget_show_all(window);
   //insert_table_entry(4, 3.14, "Waiting");
 
-  g_thread_new("", function_ptr, NULL);
-
+  g_thread_new("", function_ptr, (gpointer)window);
   g_timeout_add(16, generate_entries, window);
+
+  printf("\nI'm GTK, message from  main.\n");
   gtk_main();
+
+
+
+
 
   return GUI_OK;
 }

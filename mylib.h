@@ -11,7 +11,8 @@
 
 #define MAX_THREAD_NUMBER 26
 #define TIME_TO_SLEEP 1
-#define STACK_SIZE 40096
+#define STACK_SIZE 80096
+#define TOTAL_TICKETS_AMOUNT 1000
 
 struct thread_metadata {
   int bills;
@@ -40,10 +41,11 @@ int thread_counter = 0;
 int next_thread = 0;
 int number_of_threads;
 int algorithm;
-int Quamtum;
+int quantum;
+int work_limit;
 int opt_mode;
-int thread_workloads[MAX_THREAD_NUMBER];
-int thread_bills[MAX_THREAD_NUMBER];
+int thread_workloads[MAX_THREAD_NUMBER-1];
+int thread_bills[MAX_THREAD_NUMBER-1];
 struct threads_type list_of_threads[MAX_THREAD_NUMBER];
 struct threads_type current_thread;
 
