@@ -1,5 +1,6 @@
-Algorithm = 2
-Number_Of_Threads = 7
+Algorithm = 1
+Number_Of_Threads = 2
+Operation_Mode = 0
 Quamtum = 100
-1 2 3 4 5 6 7
-11 50000 13 14 15 16 50000
+2 2
+4 7

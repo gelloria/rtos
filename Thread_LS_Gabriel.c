@@ -1,22 +1,6 @@
 #include "mylib.h"
 
-
-// function to find factorial of given number
-long double factorial(int n){
-    if (n == 0)
-      return 1;
-
-    return n * factorial(n - 1);
-}
-
-long double arcsen(int x) {
-  long double result = 0, numerador = 0, denominador = 0;
-    // TODO: Este numero deberia de ser variable
-    for (int n = 0; n < 100000; n++) {
-      result+= ( pow(-1, n) / (1+2*n));
-    }
-  return result;
-}
+int work_limit = 2;
 
 void timer_quantum(int quantum_ms, void *function){
 	struct itimerval timer;
@@ -39,13 +23,25 @@ void compute_arcsin(void){
     int count = current_thread.data.workload;
     // timer_quantum(Quamtum, signal_handler);
     long double result = 0;
-      for (int n = 0; n < 50*count; n++) {
+
+    int y = 0;
+
+    for (int i = 0; i < count; i++) {
+      for (int n = 0; n < 50; n++) {
         // numerador = factorial(2*n) * pow(x, 2*n+1);
         // denominador = pow(2, 2*n) * pow(factorial(n), 2) * (2*n + 1);
-        current_thread.data.result += ( 2*pow(-1, n) / (1+2*n));
+        current_thread.data.result += 2*( 2*pow(-1, y) / (1+2*y));
+        y++;
         // current_thread.data.result += numerador / denominador;
       }
-      current_thread.data.result= current_thread.data.result*2;
+      if ( ((i+1)%work_limit == 0) && (algorithm == 1) && (opt_mode == 0)) {
+          printf("Current Workload(%d)\n", i);
+          printf("Workload expired, jumping to next thread!, Partial Result = %.30LF\n\n", current_thread.data.result);
+          save_current_state();
+          Scheduler();
+      }
+    }
+      // current_thread.data.result = current_thread.data.result*2;
     Thread_finished();
 }
 
@@ -112,6 +108,10 @@ void get_next_thread_1(){
   }
 
 //  printf("next_thread will be = %d\n", next_thread);
+  if (opt_mode==1) {
+    timer_quantum(Quamtum, signal_handler);
+  }
+
 }
 
 void get_next_thread_2(){
@@ -143,7 +143,7 @@ void get_next_thread_2(){
 }
 
 void signal_handler(){
-	printf(" -> Time expired, jumping to next thread!, Partial Result = %LF\n\n", current_thread.data.result);
+	printf(" -> Time expired, jumping to next thread!, Partial Result = %.30LF\n\n", current_thread.data.result);
   save_current_state();
   Scheduler();
 }
@@ -156,8 +156,7 @@ void Scheduler() {
 
   if (algorithm == 1) {
     get_next_thread_1();
-   timer_quantum(Quamtum, signal_handler);
-  } else {
+      } else {
     get_next_thread_2();
   }
 
@@ -166,7 +165,7 @@ void Scheduler() {
   if (next_thread == MAX_THREAD_NUMBER) {
     program_finished(); //Finaliza el programa si current_id llego a ser el ultimo.
   } else {
-    printf("Running Thread (%d)", current_thread.id);
+    printf("Running Thread (%d)\n", current_thread.id);
     siglongjmp(current_thread.env, 1);
   }
 
@@ -219,17 +218,22 @@ int menu( int argc, char **argv, char **in_file){
             printf("Error opening file\n");
             exit(1);
         }
-        fscanf(fp, "Algorithm = %d\n\nNumber_Of_Threads = %d\nQuamtum = %d", &algorithm, &number_of_threads, &Quamtum);
+        fscanf(fp, "Algorithm = %d\nNumber_Of_Threads = %d\nOperation_Mode = %d\nQuamtum = %d", &algorithm, &number_of_threads, &opt_mode, &Quamtum);
+
+        // if (4 >= number_of_threads || number_of_threads >= MAX_THREAD_NUMBER) {
+        //   printf("Digite una cantidad de hilos entre 5 y 25\n");
+        //   exit(1);
+        // }
 
         if (algorithm == 1) {
           printf("Using Lottery Scheduler - Number of Threads = %d\n\n" , number_of_threads);
         } else if (algorithm == 2){
-            printf("Using FCFS - Number of Threads = (%d)\n\n" , number_of_threads);
+          printf("Using FCFS - Number of Threads = (%d)\n\n" , number_of_threads);
         }
-          else {
-            printf("Invalid Scheduling Algorithim: Using Lottery Scheduler as default\n");
-            algorithm = 1;
-          }
+        else {
+          printf("Invalid Scheduling Algorithim: Using Lottery Scheduler as default\n");
+          algorithm = 1;
+        }
 
 				for (int i = 0; i < number_of_threads; i++){
 		        fscanf(fp, "%d,", &thread_bills[i] );

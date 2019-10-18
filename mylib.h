@@ -41,6 +41,7 @@ int next_thread = 0;
 int number_of_threads;
 int algorithm;
 int Quamtum;
+int opt_mode;
 int thread_workloads[MAX_THREAD_NUMBER];
 int thread_bills[MAX_THREAD_NUMBER];
 struct threads_type list_of_threads[MAX_THREAD_NUMBER];
