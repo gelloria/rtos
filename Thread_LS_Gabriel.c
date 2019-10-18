@@ -1,52 +1,5 @@
-#include <stdio.h>
-#include <setjmp.h>
-#include <signal.h>
-#include <string.h>
-#include <unistd.h>
-#include <time.h>
-#include <sys/time.h>
-#include "mythreads.c"
-#include <stdlib.h>
-#include <math.h>
+#include "mylib.h"
 
-#define MAX_THREAD_NUMBER 26
-#define TIME_TO_SLEEP 1
-#define STACK_SIZE 40096
-#define QUANTUM 100 //ms
-
-int thread_counter = 0;
-int next_thread = 0;
-int number_of_threads;
-int algorithm;
-int thread_workloads[MAX_THREAD_NUMBER];
-int thread_bills[MAX_THREAD_NUMBER];
-
-struct thread_metadata {
-  int bills;
-  int workload;
-  long double result;
-};
-
-enum thread_state {
-  READY,
-  WAITING,
-  RUNNING,
-  FINISHED,
-  OPENED
-};
-
-struct threads_type{
-  int id;
-  sigjmp_buf env;
-  char stack[STACK_SIZE];
-  void *(function);
-  enum thread_state state;
-  struct thread_metadata data;
-};
-
-
-struct threads_type list_of_threads[MAX_THREAD_NUMBER];
-struct threads_type current_thread;
 
 // function to find factorial of given number
 long double factorial(int n){
@@ -80,6 +33,20 @@ void timer_quantum(int quantum_ms, void *function){
 
 	if(function != NULL) {signal(SIGALRM, function);}
 	setitimer(ITIMER_REAL, &timer, NULL);
+}
+
+void compute_arcsin(void){
+    int count = current_thread.data.workload;
+    // timer_quantum(Quamtum, signal_handler);
+    long double result = 0;
+      for (int n = 0; n < 50*count; n++) {
+        // numerador = factorial(2*n) * pow(x, 2*n+1);
+        // denominador = pow(2, 2*n) * pow(factorial(n), 2) * (2*n + 1);
+        current_thread.data.result += ( 2*pow(-1, n) / (1+2*n));
+        // current_thread.data.result += numerador / denominador;
+      }
+      current_thread.data.result= current_thread.data.result*2;
+    Thread_finished();
 }
 
 void save_current_state(){
@@ -153,7 +120,32 @@ void get_next_thread_2(){
   if (next_thread == number_of_threads+1) {
     next_thread = MAX_THREAD_NUMBER;
   }
+
+  // int salio = 0;
+  //
+  //     for (size_t i = 1; i < number_of_threads; i++) {
+  //       if(list_of_threads[i].state != FINISHED){
+  //         next_thread = i;
+  //         salio = 1;
+  //         break;
+  //       }
+  //     }
+  //
+  //     if(!salio) next_thread = MAX_THREAD_NUMBER;
+  //
+  //     // if (next_thread==Number_Of_Threads-1 && list_of_threads[next_thread-1].state == 0 ){
+  //     //   next_thread--;
+  //     // }
+  //
+  // //    next_thread = queue_thread[0];
+
   stop_timer();
+}
+
+void signal_handler(){
+	printf(" -> Time expired, jumping to next thread!, Partial Result = %LF\n\n", current_thread.data.result);
+  save_current_state();
+  Scheduler();
 }
 
 void Scheduler() {
@@ -164,6 +156,7 @@ void Scheduler() {
 
   if (algorithm == 1) {
     get_next_thread_1();
+   timer_quantum(Quamtum, signal_handler);
   } else {
     get_next_thread_2();
   }
@@ -186,29 +179,10 @@ void Thread_finished(){
   Scheduler();
 }
 
-void signal_handler(){
-	printf(" -> Time expired, jumping to next thread!, Partial Result = %LF\n\n", current_thread.data.result);
-  save_current_state();
-  Scheduler();
-}
-
-
-void compute_arcsin(void){
-    int count = current_thread.data.workload;
-    timer_quantum(QUANTUM, signal_handler);
-    long double result = 0;
-      for (int n = 0; n < 50*count; n++) {
-        current_thread.data.result += ( 2*pow(-1, n) / (1+2*n));
-      }
-      current_thread.data.result= current_thread.data.result*2;
-    Thread_finished();
-}
 
 void create_hilo(void *function, struct thread_metadata data) {
   thread_counter++;
   address_t sp, pc;
-
-//  printf("Creating Thread = %d\n", thread_counter);
 
   list_of_threads[thread_counter].id = thread_counter;
   list_of_threads[thread_counter].function = function;
@@ -245,11 +219,11 @@ int menu( int argc, char **argv, char **in_file){
             printf("Error opening file\n");
             exit(1);
         }
-        fscanf(fp, "Algorithm = %d\n\nNumber_Of_Threads = %d", &algorithm, &number_of_threads);
+        fscanf(fp, "Algorithm = %d\n\nNumber_Of_Threads = %d\nQuamtum = %d", &algorithm, &number_of_threads, &Quamtum);
 
         if (algorithm == 1) {
           printf("Using Lottery Scheduler - Number of Threads = %d\n\n" , number_of_threads);
-        } else if (algorithm == 1){
+        } else if (algorithm == 2){
             printf("Using FCFS - Number of Threads = (%d)\n\n" , number_of_threads);
         }
           else {
@@ -287,6 +261,7 @@ int menu( int argc, char **argv, char **in_file){
 	}
 	return 0;
 }
+
 
 int main(int argc, char **argv){
 
