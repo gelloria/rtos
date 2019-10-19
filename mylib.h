@@ -17,10 +17,12 @@
 #define TIME_TO_SLEEP 1
 #define STACK_SIZE 80096
 #define TOTAL_TICKETS_AMOUNT 1000
+#define WORKLOAD_UNIT 50
 
 struct thread_metadata {
   int bills;
   int workload;
+  int actual_workload;
   long double result;
 };
 

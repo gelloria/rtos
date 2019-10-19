@@ -13,10 +13,14 @@ enum {
     COLUMN_THREAD_ID,
     COLUMN_PI_TMP,
     COLUMN_THREAD_STATUS,
+    COLUMN_PERCENTAGE,
     COLUMN_MAX
 };
 
-int insert_table_entry(int thread_number, float pi_tmp, char thread_status[]);
+int insert_table_entry(int thread_number,
+                       float pi_tmp,
+                       char thread_status[],
+                       uint percentage);
 
 int insert_table_clear();
 

@@ -29,29 +29,27 @@ void timer_quantum(int quantum_ms, void *function){
 
 void compute_arcsin(void){
     int count = current_thread.data.workload;
-    // timer_quantum(quantum, signal_handler);
-    long double result = 0;
-
-    int y = 0;
+    int actual_workload = 0;
 
     for (int i = 0; i < count; i++) {
       for (int n = 0; n < 50; n++) {
-        // numerador = factorial(2*n) * pow(x, 2*n+1);
-        // denominador = pow(2, 2*n) * pow(factorial(n), 2) * (2*n + 1);
-        current_thread.data.result += 2*( 2*pow(-1, y) / (1+2*y));
-				sleepsec(1000000);
-        y++;
-        // current_thread.data.result += numerador / denominador;
+        current_thread.data.result += 2*( 2*pow(-1, actual_workload) / (1+2*actual_workload));
+				current_thread.data.actual_workload = actual_workload;
+
+				// Sleep used to avoid a super-fast termination
+				sleepsec(4000);
+        actual_workload++;
       }
       if ( ((i+1)%work_limit == 0) && (algorithm == 1) && (opt_mode == 0)) {
           printf("Current Workload (%d) , Workload Expired!\n", i);
           printf("Workload expired, jumping to next thread!, Partial Result = %LF\n\n", current_thread.data.result);
+					current_thread.state = WAITING;
+					current_thread.data.actual_workload = actual_workload;
           save_current_state();
           Scheduler();
       }
     }
       // current_thread.data.result = current_thread.data.result*2;
-
     Thread_finished();
 }
 
@@ -61,6 +59,7 @@ void save_current_state(){
   list_of_threads[current_thread.id].function = current_thread.function;
   list_of_threads[current_thread.id].state = current_thread.state;
   list_of_threads[current_thread.id].data.result = current_thread.data.result;
+	list_of_threads[current_thread.id].data.actual_workload = current_thread.data.actual_workload;
 
 }
 
@@ -85,7 +84,7 @@ void get_next_thread_1(){
 
   int j=0;
   int rand_num = 0;
-  int winner_bill=  0;
+  // int winner_bill=  0;
   int total_bills = 0;
   int available_bills[TOTAL_TICKETS_AMOUNT];
 
@@ -102,13 +101,6 @@ void get_next_thread_1(){
       }
     }
   }
-// printf("total_amount_tickets = %d\n", total_bills);
-
-/*  printf("total_bills = { " );
-  for (int y = 0; y < total_bills; y++) {
-    printf("%d, ", available_bills[y]);
-  }
-  printf(" } \n"); */
 
   if (total_bills == 0) {
     next_thread = MAX_THREAD_NUMBER;
@@ -116,11 +108,6 @@ void get_next_thread_1(){
     // Lottery bill trow
     rand_num = rand_range(0, total_bills-1);
     next_thread = available_bills[rand_num];
-  }
-
- // printf("next_thread will be = %d\n", next_thread);
-  if (opt_mode==1) {
-    timer_quantum(quantum, signal_handler);
   }
 
 }
@@ -132,29 +119,12 @@ void get_next_thread_2(){
     next_thread = MAX_THREAD_NUMBER;
   }
 
-  // int salio = 0;
-  //
-  //     for (size_t i = 1; i < number_of_threads; i++) {
-  //       if(list_of_threads[i].state != FINISHED){
-  //         next_thread = i;
-  //         salio = 1;
-  //         break;
-  //       }
-  //     }
-  //
-  //     if(!salio) next_thread = MAX_THREAD_NUMBER;
-  //
-  //     // if (next_thread==Number_Of_Threads-1 && list_of_threads[next_thread-1].state == 0 ){
-  //     //   next_thread--;
-  //     // }
-  //
-  // //    next_thread = queue_thread[0];
-
   stop_timer();
 }
 
 void signal_handler(){
 	printf(" -> Time expired, jumping to next thread!, Partial Result = %.5LF\n\n", current_thread.data.result);
+	current_thread.state = WAITING;
   save_current_state();
   Scheduler();
 }
@@ -167,14 +137,19 @@ void Scheduler() {
 
   if (algorithm == 1) {
     get_next_thread_1();
+		if (opt_mode==1) {
+			timer_quantum(quantum, signal_handler);
+		}
       } else {
     get_next_thread_2();
   }
 
   if (next_thread == MAX_THREAD_NUMBER) {
+		stop_timer();
     program_finished(); //Finaliza el programa si current_id llego a ser el ultimo.
   } else {
 		current_thread = list_of_threads[next_thread];
+		list_of_threads[current_thread.id].state = RUNNING;
     printf("Running Thread (%d) ", current_thread.id);
     siglongjmp(current_thread.env, 1);
   }
@@ -197,6 +172,7 @@ void create_hilo(void *function, struct thread_metadata data) {
   list_of_threads[thread_counter].function = function;
   list_of_threads[thread_counter].data = data;
   list_of_threads[thread_counter].state = READY;
+	list_of_threads[thread_counter].data.actual_workload = 0;
 
   sp = (address_t)list_of_threads[thread_counter].stack + STACK_SIZE - sizeof(address_t);
   pc = (address_t)list_of_threads[thread_counter].function;
@@ -213,7 +189,7 @@ void setup(void) {
   list_of_threads[thread_counter].function = NULL;
   list_of_threads[thread_counter].data.result = 0;
 
-  int main_setup = sigsetjmp(list_of_threads[thread_counter].env,1);
+  sigsetjmp(list_of_threads[thread_counter].env,1);
 
 }
 
