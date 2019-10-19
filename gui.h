@@ -1,3 +1,6 @@
+#ifndef GUI_H
+#define GUI_H
+
 #include <gtk/gtk.h>
 #include <unistd.h>
 
@@ -24,3 +27,5 @@ int gtk_model_initialize();
 gboolean generate_entries (gpointer user_data);
 
 int gtk_view_initialize(void* function_ptr);
+
+#endif

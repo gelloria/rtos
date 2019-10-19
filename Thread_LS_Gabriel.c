@@ -1,5 +1,8 @@
 #include "mylib.h"
-#include "gui.h"
+#include "mythreads.c"
+
+int thread_counter = 0;
+int next_thread = 0;
 
 void sleepsec(int n) {
 	for (size_t i = 0; i < n; i++) {
@@ -36,7 +39,7 @@ void compute_arcsin(void){
         // numerador = factorial(2*n) * pow(x, 2*n+1);
         // denominador = pow(2, 2*n) * pow(factorial(n), 2) * (2*n + 1);
         current_thread.data.result += 2*( 2*pow(-1, y) / (1+2*y));
-				sleepsec(1000);
+				sleepsec(1000000);
         y++;
         // current_thread.data.result += numerador / denominador;
       }
@@ -48,6 +51,7 @@ void compute_arcsin(void){
       }
     }
       // current_thread.data.result = current_thread.data.result*2;
+
     Thread_finished();
 }
 

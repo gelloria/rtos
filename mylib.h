@@ -1,3 +1,6 @@
+#ifndef MY_LIB_H
+#define MY_LIB_H
+
 #include <stdio.h>
 #include <setjmp.h>
 #include <signal.h>
@@ -7,7 +10,8 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include <math.h>
-#include "mythreads.c"
+
+#include "gui.h"
 
 #define MAX_THREAD_NUMBER 26
 #define TIME_TO_SLEEP 1
@@ -37,8 +41,7 @@ struct threads_type{
   struct thread_metadata data;
 };
 
-int thread_counter = 0;
-int next_thread = 0;
+
 int number_of_threads;
 int algorithm;
 int quantum;
@@ -49,9 +52,7 @@ int thread_bills[MAX_THREAD_NUMBER-1];
 struct threads_type list_of_threads[MAX_THREAD_NUMBER];
 struct threads_type current_thread;
 
-
 void timer_quantum(int quantum_ms, void *function);
-void save_current_state();
 void save_current_state();
 void stop_timer();
 int rand_range(int low, int up);
@@ -65,3 +66,5 @@ void Thread_finished();
 void compute_arcsin(void);
 void create_hilo(void *function, struct thread_metadata data);
 void setup(void);
+
+#endif

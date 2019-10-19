@@ -1,5 +1,5 @@
 Algorithm = 1
-Number_Of_Threads = 25
+Number_Of_Threads = 5
 Operation_Mode = 0
 Quantum = 100
 Workload_Fraction = 2

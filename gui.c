@@ -1,7 +1,9 @@
-#include "gui.h"
+#include "mylib.h"
 
 int insert_table_entry(int thread_number, float pi_tmp, char thread_status[]){
-  GtkTreeIter *iter;
+  GtkTreeIter *iter = NULL;
+
+  //printf("THREAD NUMBERRRRRRRRRRRRR %d\n", thread_number);
 
   // Insert an element in the table
   gtk_list_store_insert_with_values(model, iter, thread_number-1,
@@ -38,29 +40,36 @@ int gtk_model_initialize(){
   return GUI_OK;
 }
 
-gboolean generate_entries (gpointer user_data){
+gboolean generate_entries (gpointer thread_data){
+  char * thread_status = "";
+
   // Create an entry in the table
-  /*
-  insert_table_entry(1, 3.14, "Running");
-  sleep(3);
-  insert_table_entry(2, 3.14, "Waiting");
-  sleep(3);
-  insert_table_entry(3, 3.14, "Waiting");
-  sleep(3);
-  insert_table_entry(4, 3.14, "Waiting");
-
-  sleep(3);
   insert_table_clear();
-  */
-  // printf("%s\n", "LALLA 1 ");
-  // printf("%s\n", "LALLA 2 ");
-  // printf("%s\n", "LALLA 3 ");
-  // printf("%s\n", "LALLA 4 ");
 
-  // insert_table_entry(4, 3.14, "Waiting");
+
+  for (int i = 1; i <= number_of_threads; i++) {
+
+    // Convert from enum to char the thead status
+    if(list_of_threads[i].state == READY){
+      thread_status = "Ready";
+    }else if(list_of_threads[i].state == WAITING){
+      thread_status = "Waiting";
+    }else if(list_of_threads[i].state == RUNNING){
+      thread_status = "Running";
+    }else if(list_of_threads[i].state == FINISHED){
+      thread_status = "Finished";
+    }else if(list_of_threads[i].state == OPENED){
+      thread_status = "Opened";
+    }else{
+      thread_status = "Unrecognized";
+    }
+
+    insert_table_entry(list_of_threads[i].id,
+                       list_of_threads[i].data.result,
+                       thread_status);
+  }
 
   return TRUE;
-
 }
 
 int gtk_view_initialize(void *function_ptr){
@@ -101,17 +110,15 @@ int gtk_view_initialize(void *function_ptr){
   window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_container_add(GTK_CONTAINER(window), view);
   gtk_widget_show_all(window);
-  //insert_table_entry(4, 3.14, "Waiting");
 
-  g_thread_new("", function_ptr, (gpointer)window);
-  g_timeout_add(16, generate_entries, window);
+  // Create the initial threads
+  for (size_t i = 1; i <= number_of_threads; i++) {
+    insert_table_entry(i, 0, "New");
+  }
 
-  printf("\nI'm GTK, message from  main.\n");
+  g_thread_new("", function_ptr, NULL);
+  g_timeout_add(20, generate_entries, NULL);
   gtk_main();
-
-
-
-
 
   return GUI_OK;
 }
