@@ -1,0 +1,26 @@
+Algorithm = 2
+Number_Of_Threads = 5
+Operation_Mode = 1
+Quantum = 1000
+Workload_Fraction = 2
+1 2 3 4 5
+10000 10000 10000 10000 10000
+
+################################################################################################################
+# TYPE OF ALGORITHM
+# THIS CONFIGURATION IS USED TO DETERMINATE WHICH TYPE OF SCHEDULING ALGORITHM SHOULD BE USED
+# Algorithm = 1 -> LOTTERY SCHEDULING
+# Algorithm = 2 -> FIRST COME FIRST SERVED
+# --------------------------------------------------------------------------------------------------------------
+# NUMBER OF THREADS
+# THIS VARIABLE IS USED TO SET THE NUMBER OF THREADS WANTED TO BE USED BY THE ALGORITHM
+# --------------------------------------------------------------------------------------------------------------
+# OPERATION MODE
+# THIS VARIABLE IS USED TO SET THE THREAD EXPROPIATION  MODE OF THE SCHEDULER
+# Operation_Mode = 1 -> EXPROPIATIVE MODE
+# Operation_Mode = 0 -> NOT EXPROPIATIVE MODE
+# Quantum -> Quantum definition (When in expropiative mode)
+# Workload_Fraction -> workload fraction definition (When in expropiative mode)
+# --------------------------------------------------------------------------------------------------------------
+#
+#############################################################################################################
