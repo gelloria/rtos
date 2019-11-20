@@ -57,7 +57,13 @@ int tasks_ctime_pending[NUMBER_OF_TASKS] = {3, 4};
 
 int task_ready[NUMBER_OF_TASKS] = {0,0};
 
-int tasks_next_deadline[NUMBER_OF_TASKS] = {0,0};
+int tasks_next_deadline[NUMBER_OF_TASKS];
+int tasks_laxity[NUMBER_OF_TASKS];
+
+int temp_results[1000][NUMBER_OF_TASKS];
+int rm_results[1000][NUMBER_OF_TASKS];
+int edf_results[1000][NUMBER_OF_TASKS];
+int llf_results[1000][NUMBER_OF_TASKS];
 
 int lcm = 18;
 
@@ -65,6 +71,7 @@ void reset_vectors() {
 	memcpy(tasks_id_sorted, tasks_id_original, sizeof(tasks_id_sorted));
 	memcpy(tasks_ctime_pending, tasks_ctime, sizeof(tasks_ctime_pending));
 	memset(task_ready, 0, sizeof(task_ready));
+	memset(temp_results, 0, sizeof(temp_results));
 }
 
 void id_priority_sort_ascending(int reference_array[], int Size){
@@ -189,7 +196,37 @@ int get_next_task_rm() {
 return current_task_idx;
 }
 
-void execute_task(int current_task_idx) {
+int get_next_task_llf (){
+
+	int avaliable_tasks = 0;
+	int current_task_idx = 0;
+
+	for (size_t i = 0; i < NUMBER_OF_TASKS; i++) { //Checks if there are tasks to run or not.
+		avaliable_tasks = task_ready[tasks_id_sorted[i]] + avaliable_tasks;
+	}
+
+
+	if (avaliable_tasks > 0) { //If there are tasks to run then
+
+		memcpy(tasks_id_sorted, tasks_id_original, sizeof(tasks_id_sorted)); // reset vector
+		id_priority_sort_ascending(tasks_laxity, NUMBER_OF_TASKS); //Sorts the array based on the EDF algorithim and get first task.
+
+		while ( task_ready[tasks_id_sorted[current_task_idx]] == 0) {
+			current_task_idx=(current_task_idx+1)%NUMBER_OF_TASKS;
+		}
+
+	} else {
+	 current_task_idx = -1; //Enables a flag that means no tasks to run.
+ }
+
+	 return current_task_idx;
+}
+
+void build_matrix(int current_cycle, int id_task) {
+	temp_results[current_cycle][id_task] = id_task+1;
+}
+
+void execute_task(int current_task_idx, int current_cycle) {
 	if (current_task_idx==-1) { //para periodos que no tienen tareas que ejecutar.
 		printf("NOP\n");
 	} else {
@@ -199,6 +236,7 @@ void execute_task(int current_task_idx) {
 		int current_tasks_ctime_pending = tasks_ctime_pending[current_task_id];
 
 		if ( current_tasks_ctime_pending > 0 && task_ready[current_task_id] == 1) {
+			build_matrix(current_cycle, current_task_id);
 			printf("Current Task (%d) \n", current_task_id);
 			current_tasks_ctime_pending--; //Reduces ctime by one as it just executed.
 			tasks_ctime_pending[current_task_id] = current_tasks_ctime_pending;
@@ -210,6 +248,14 @@ void execute_task(int current_task_idx) {
 		}
 	}
 }
+
+void calculate_laxity(int current_cycle) {
+	for (int i = 0; i < NUMBER_OF_TASKS; i++) {
+		tasks_laxity[i] = tasks_next_deadline[i]	- current_cycle - tasks_ctime_pending[i];
+	}
+}
+
+
 
 int  main(int argc, char const *argv[]) {
 
@@ -224,8 +270,10 @@ int  main(int argc, char const *argv[]) {
 		non_schedulable  = enable_task_based_on_period(current_cycle);
 		continue_loop     = deadline_finish (non_schedulable); if (continue_loop == 0) break;
 		current_task_idx  = get_next_task_rm() ;
-		execute_task(current_task_idx);
+		execute_task(current_task_idx, current_cycle);
 	}
+
+	memcpy(rm_results, temp_results, sizeof(rm_results));
 
 	printf("RM Finished!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\n");
 
@@ -238,10 +286,69 @@ int  main(int argc, char const *argv[]) {
 		non_schedulable  = enable_task_based_on_period(current_cycle);
 		continue_loop     = deadline_finish (non_schedulable); if (continue_loop == 0) break;
 		current_task_idx  = get_next_task_edf() ;
-		execute_task(current_task_idx);
+		execute_task(current_task_idx, current_cycle);
 	}
 
-	printf("EDF Finished!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+	memcpy(edf_results, temp_results, sizeof(rm_results));
+
+	printf("EDF Finished!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\n");
+
+	reset_vectors();
+
+	// calculate_laxity(0);
+	//
+	// id_priority_sort_ascending(tasks_laxity, NUMBER_OF_TASKS); //Sorts the array based on the EDF algorithim and get first task.
+
+	// for (int i = 0; i < NUMBER_OF_TASKS; i++) {
+	// 	printf("task id %d laxiity %d\n", i, tasks_laxity[i]);
+	// }
+	//
+	// for (int i = 0; i < NUMBER_OF_TASKS; i++) {
+	// 	printf("tasks_id_sorted %d\n", tasks_id_sorted[i]);
+	// }
+
+	for (int current_cycle = 0; current_cycle < lcm && algorithim[2] != 0; current_cycle++) {
+		printf("Estoy en ciclo %d ->", current_cycle);
+		non_schedulable  = enable_task_based_on_period(current_cycle);
+		continue_loop     = deadline_finish (non_schedulable); if (continue_loop == 0) break;
+		calculate_laxity(current_cycle);
+		current_task_idx  = get_next_task_llf() ;
+		execute_task(current_task_idx, current_cycle);
+	}
+
+	memcpy(llf_results, temp_results, sizeof(rm_results));
+
+
+
+	printf("LLF Finished!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+
+
+	printf("\nRM TIME TABLE\n");
+
+	for (int j = 0; j < NUMBER_OF_TASKS; j++) {
+		for (int i = 0; i < lcm; i++) {
+			printf("%d | ", rm_results[i][j]);
+		}
+		printf("\n");
+	}
+
+	printf("\nEDF TIME TABLE\n");
+
+	for (int j = 0; j < NUMBER_OF_TASKS; j++) {
+		for (int i = 0; i < lcm; i++) {
+			printf("%d | ", edf_results[i][j]);
+		}
+		printf("\n");
+	}
+
+	printf("\nLLF TIME TABLE\n");
+
+	for (int j = 0; j < NUMBER_OF_TASKS; j++) {
+		for (int i = 0; i < lcm; i++) {
+			printf("%d | ", llf_results[i][j]);
+		}
+		printf("\n");
+	}
 
 	return 0;
 }
