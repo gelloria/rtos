@@ -1,88 +1,62 @@
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
-#include <time.h>
-#include <sys/time.h>
 #include <stdlib.h>
-#include <math.h>
 
-// #define NUMBER_OF_TASKS 4 //ejemplo rolando que falla
-//
-// int tasks_id_sorted[NUMBER_OF_TASKS] = {0, 1, 2, 3};
-// int tasks_id_original[NUMBER_OF_TASKS] = {0, 1, 2, 3};
-//
-// int tasks_period[NUMBER_OF_TASKS] = {10, 5, 20, 10};
-//
-// int tasks_ctime[NUMBER_OF_TASKS] = {4, 2, 3, 1};
-// int tasks_ctime_pending[NUMBER_OF_TASKS] = {4, 2, 3, 1};
-//
-//
-// int task_ready[NUMBER_OF_TASKS] = {0, 0, 0, 0};
+#define MAX_NUMBER_OF_TASKS 6
+#define MAX_HYPERPERIOD 1000
 
-// #define NUMBER_OF_TASKS 3 //ejemplo de rm de clase
-//
-// int tasks_id_sorted[NUMBER_OF_TASKS] = {0, 1, 2};
-// int tasks_id_original[NUMBER_OF_TASKS] = {0, 1, 2};
-//
-// int tasks_period[NUMBER_OF_TASKS] = {6,9, 18};
-//
-// int tasks_ctime[NUMBER_OF_TASKS] = {1, 2, 6};
-// int tasks_ctime_pending[NUMBER_OF_TASKS] = {1, 2, 6};
-//
-// int task_ready[NUMBER_OF_TASKS] = {0, 0, 0};
+int number_of_tasks = 2;
 
-// #define NUMBER_OF_TASKS 3
-//
-// int tasks_id_sorted[NUMBER_OF_TASKS] = {0, 1, 2};
-// int tasks_id_original[NUMBER_OF_TASKS] = {0, 1, 2};
-//
-// int tasks_period[NUMBER_OF_TASKS] = {30, 40, 52};
-//
-// int tasks_ctime[NUMBER_OF_TASKS] = {10, 10, 12};
-// int tasks_ctime_pending[NUMBER_OF_TASKS] = {10, 10, 12};
-//
-// int task_ready[NUMBER_OF_TASKS] = {0,0,0};
-//
-// int tasks_next_deadline[NUMBER_OF_TASKS] = {0,0,0};
+struct output_matrix {
+	int temp_results[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS];
+	int rm_results[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS];
+	int edf_results[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS];
+	int llf_results[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS];
+};
 
-#define NUMBER_OF_TASKS 2
+// struct tasks {
+// 	int id;
+// 	int period;
+// 	int ctime;
+// 	int state;
+// 	int laxity;
+// 	int next_deadline;
+// 	int ctime_pending;
+// };
 
-int tasks_id_sorted[NUMBER_OF_TASKS] = {0, 1};
-int tasks_id_original[NUMBER_OF_TASKS] = {0, 1};
+int tasks_ctime[MAX_NUMBER_OF_TASKS] = {3, 4};
+int tasks_period[MAX_NUMBER_OF_TASKS] = {6, 9};
 
-int tasks_period[NUMBER_OF_TASKS] = {6, 9};
+int tasks_id_original[MAX_NUMBER_OF_TASKS] = {0, 1, 2, 3 ,4 , 5};
+int tasks_ctime_pending[MAX_NUMBER_OF_TASKS];
+int task_state[MAX_NUMBER_OF_TASKS];
+int tasks_queue_id[MAX_NUMBER_OF_TASKS];
+int tasks_laxity[MAX_NUMBER_OF_TASKS];
+int tasks_next_deadline[MAX_NUMBER_OF_TASKS];
 
-int tasks_ctime[NUMBER_OF_TASKS] = {3, 4};
-int tasks_ctime_pending[NUMBER_OF_TASKS] = {3, 4};
 
-int task_ready[NUMBER_OF_TASKS] = {0,0};
+struct output_matrix results;
+struct tasks list_of_tasks[MAX_NUMBER_OF_TASKS];
 
-int tasks_next_deadline[NUMBER_OF_TASKS];
-int tasks_laxity[NUMBER_OF_TASKS];
-
-int temp_results[1000][NUMBER_OF_TASKS];
-int rm_results[1000][NUMBER_OF_TASKS];
-int edf_results[1000][NUMBER_OF_TASKS];
-int llf_results[1000][NUMBER_OF_TASKS];
 
 int lcm = 18;
 
 void reset_vectors() {
-	memcpy(tasks_id_sorted, tasks_id_original, sizeof(tasks_id_sorted));
-	memcpy(tasks_ctime_pending, tasks_ctime, sizeof(tasks_ctime_pending));
-	memset(task_ready, 0, sizeof(task_ready));
-	memset(temp_results, 0, sizeof(temp_results));
+	memcpy(tasks_queue_id, tasks_id_original, MAX_NUMBER_OF_TASKS);
+	memcpy(tasks_ctime_pending, tasks_ctime, MAX_NUMBER_OF_TASKS);
+	memset(task_state, 0, MAX_NUMBER_OF_TASKS);
+	memset(results.temp_results, 0, MAX_NUMBER_OF_TASKS);
 }
 
-void id_priority_sort_ascending(int reference_array[], int Size){
+void id_priority_sort_ascending(int reference_array[]){
 	int temp_array, temp_id;
-	int temp_sorted_array[Size];
+	int temp_sorted_array[number_of_tasks];
 
 	memcpy(temp_sorted_array, reference_array, sizeof(temp_sorted_array));
 
-	for (int i = 0; i < Size; i++)
+	for (int i = 0; i < number_of_tasks; i++)
 	{
-		for (int j = i + 1; j < Size; j++)
+		for (int j = i + 1; j < number_of_tasks; j++)
 		{
 			if(reference_array[i] > reference_array[j])
 			{
@@ -90,9 +64,9 @@ void id_priority_sort_ascending(int reference_array[], int Size){
 				reference_array[i] = reference_array[j];
 				reference_array[j] = temp_array;
 
-				temp_id = tasks_id_sorted[i];
-				tasks_id_sorted[i] = tasks_id_sorted[j];
-				tasks_id_sorted[j] = temp_id;
+				temp_id = tasks_queue_id[i];
+				tasks_queue_id[i] = tasks_queue_id[j];
+				tasks_queue_id[j] = temp_id;
 			}
 		}
 	}
@@ -105,11 +79,11 @@ int enable_task_based_on_period(int current_cycle) {
 
 	int non_schedulable = 0;
 
-	for (int i = 0; i < NUMBER_OF_TASKS; i++) {
+	for (int i = 0; i < number_of_tasks; i++) {
 		if (current_cycle%tasks_period[i] == 0) {
-			task_ready[i] = 1;  //enable task to run;
+			task_state[i] = 1;  //enable task to run;
 
-			// printf("se cumplio periodo de la tarea %d, estado => %d\n", i, task_ready[i]);
+			// printf("se cumplio periodo de la tarea %d, estado => %d\n", i, task_state[i]);
 
 			/////////////// Only for EDF //////////////////
 			tasks_next_deadline[i] = current_cycle+tasks_period[i]; //now that task has been re-enabled calculate next deadline.
@@ -118,7 +92,7 @@ int enable_task_based_on_period(int current_cycle) {
 			if (tasks_ctime_pending[i] == 0) { //if task finished then it should be reseted here.
 				tasks_ctime_pending[i] = tasks_ctime[i];
 			}  else if ( (0 < tasks_ctime_pending[i]) && (tasks_ctime_pending[i] < tasks_ctime[i])) {
-				printf("Deadline of task %d not met\n" ,tasks_id_sorted[i]);
+				printf("Deadline of task %d not met\n" ,tasks_queue_id[i]);
 				non_schedulable = 1;
 				break;
 			}
@@ -144,28 +118,18 @@ int get_next_task_edf (){
 	int avaliable_tasks = 0;
 	int current_task_idx = 0;
 
-	for (size_t i = 0; i < NUMBER_OF_TASKS; i++) { //Checks if there are tasks to run or not.
-		avaliable_tasks = task_ready[tasks_id_sorted[i]] + avaliable_tasks;
+	for (size_t i = 0; i < number_of_tasks; i++) { //Checks if there are tasks to run or not.
+		avaliable_tasks = task_state[tasks_queue_id[i]] + avaliable_tasks;
 	}
-
 
 	if (avaliable_tasks > 0) { //If there are tasks to run then
 
-		memcpy(tasks_id_sorted, tasks_id_original, sizeof(tasks_id_sorted)); // reset vector
-		id_priority_sort_ascending(tasks_next_deadline, NUMBER_OF_TASKS); //Sorts the array based on the RM algorithim and get first task.
+		memcpy(tasks_queue_id, tasks_id_original, sizeof(tasks_queue_id)); // reset vector
+		id_priority_sort_ascending(tasks_next_deadline); //Sorts the array based on the RM algorithim and get first task.
 
-		while ( task_ready[tasks_id_sorted[current_task_idx]] == 0) {
-			current_task_idx=(current_task_idx+1)%NUMBER_OF_TASKS;
+		while ( task_state[tasks_queue_id[current_task_idx]] == 0) {
+			current_task_idx=(current_task_idx+1)%number_of_tasks;
 		}
-
-		// for (int i = 0; i < NUMBER_OF_TASKS; i++) {
-		// 	printf("task %d, tasks_next_deadline %d, ready %d \n", i, tasks_next_deadline[i], task_ready[i]);
-	 // }
-	 //
-		// for (int i = 0; i < NUMBER_OF_TASKS; i++) {
-		// 	printf("task order %d\n", tasks_id_sorted[i]);
-	 // }
-
 
 	} else {
 	 current_task_idx = -1; //Enables a flag that means no tasks to run.
@@ -179,14 +143,14 @@ int get_next_task_rm() {
 	int current_task_idx = 0;
 	int avaliable_tasks = 0;
 
-	for (size_t i = 0; i < NUMBER_OF_TASKS; i++) { //Checks if there are tasks to run or not.
-		avaliable_tasks = task_ready[tasks_id_sorted[i]] + avaliable_tasks;
+	for (size_t i = 0; i < number_of_tasks; i++) { //Checks if there are tasks to run or not.
+		avaliable_tasks = task_state[tasks_queue_id[i]] + avaliable_tasks;
 	}
 
 	if (avaliable_tasks > 0) { //If there are tasks to run then
 
-		while (task_ready[tasks_id_sorted[current_task_idx]] == 0) { //Searches for next avaliable task that is runnable.
-			current_task_idx=(current_task_idx+1)%NUMBER_OF_TASKS;
+		while (task_state[tasks_queue_id[current_task_idx]] == 0) { //Searches for next avaliable task that is runnable.
+			current_task_idx=(current_task_idx+1)%number_of_tasks;
 		}
 
 	} else {
@@ -201,18 +165,18 @@ int get_next_task_llf (){
 	int avaliable_tasks = 0;
 	int current_task_idx = 0;
 
-	for (size_t i = 0; i < NUMBER_OF_TASKS; i++) { //Checks if there are tasks to run or not.
-		avaliable_tasks = task_ready[tasks_id_sorted[i]] + avaliable_tasks;
+	for (size_t i = 0; i < number_of_tasks; i++) { //Checks if there are tasks to run or not.
+		avaliable_tasks = task_state[tasks_queue_id[i]] + avaliable_tasks;
 	}
 
 
 	if (avaliable_tasks > 0) { //If there are tasks to run then
 
-		memcpy(tasks_id_sorted, tasks_id_original, sizeof(tasks_id_sorted)); // reset vector
-		id_priority_sort_ascending(tasks_laxity, NUMBER_OF_TASKS); //Sorts the array based on the EDF algorithim and get first task.
+		memcpy(tasks_queue_id, tasks_id_original, sizeof(tasks_queue_id)); // reset vector
+		id_priority_sort_ascending(tasks_laxity); //Sorts the array based on the EDF algorithim and get first task.
 
-		while ( task_ready[tasks_id_sorted[current_task_idx]] == 0) {
-			current_task_idx=(current_task_idx+1)%NUMBER_OF_TASKS;
+		while ( task_state[tasks_queue_id[current_task_idx]] == 0) {
+			current_task_idx=(current_task_idx+1)%number_of_tasks;
 		}
 
 	} else {
@@ -223,19 +187,19 @@ int get_next_task_llf (){
 }
 
 void build_matrix(int current_cycle, int id_task) {
-	temp_results[current_cycle][id_task] = id_task+1;
+	results.temp_results[current_cycle][id_task] = id_task+1;
 }
 
 void execute_task(int current_task_idx, int current_cycle) {
 	if (current_task_idx==-1) { //para periodos que no tienen tareas que ejecutar.
 		printf("NOP\n");
 	} else {
-		int current_task_id = tasks_id_sorted[current_task_idx];
+		int current_task_id = tasks_queue_id[current_task_idx];
 		int current_task_ctime = tasks_ctime[current_task_id];
 		int current_task_period = tasks_period[current_task_id];
 		int current_tasks_ctime_pending = tasks_ctime_pending[current_task_id];
 
-		if ( current_tasks_ctime_pending > 0 && task_ready[current_task_id] == 1) {
+		if ( current_tasks_ctime_pending > 0 && task_state[current_task_id] == 1) {
 			build_matrix(current_cycle, current_task_id);
 			printf("Current Task (%d) \n", current_task_id);
 			current_tasks_ctime_pending--; //Reduces ctime by one as it just executed.
@@ -244,26 +208,24 @@ void execute_task(int current_task_idx, int current_cycle) {
 
 		if (current_tasks_ctime_pending == 0) {
 			tasks_ctime_pending[current_task_id] = current_task_ctime; //resets computation for next period.
-			task_ready[current_task_id] = 0;  //disable task to run;
+			task_state[current_task_id] = 0;  //disable task to run;
 		}
 	}
 }
 
 void calculate_laxity(int current_cycle) {
-	for (int i = 0; i < NUMBER_OF_TASKS; i++) {
+	for (int i = 0; i < number_of_tasks; i++) {
 		tasks_laxity[i] = tasks_next_deadline[i]	- current_cycle - tasks_ctime_pending[i];
 	}
 }
-
-
 
 int  main(int argc, char const *argv[]) {
 
 	int current_task_idx ,continue_loop, non_schedulable;
 
-	id_priority_sort_ascending(tasks_ctime, NUMBER_OF_TASKS); //Sorts the array based on the RM algorithim and get first task.
+	id_priority_sort_ascending(tasks_ctime); //Sorts the array based on the RM algorithim and get first task.
 
-	int algorithim[3] = {1,1,1};
+	int algorithim[3] = {1,1,1}; //To enable the for loops for the algorithms.
 
 	for (int current_cycle = 0; current_cycle < lcm && algorithim[0] != 0; current_cycle++) {
 		printf("Estoy en ciclo %d -> ", current_cycle);
@@ -273,13 +235,11 @@ int  main(int argc, char const *argv[]) {
 		execute_task(current_task_idx, current_cycle);
 	}
 
-	memcpy(rm_results, temp_results, sizeof(rm_results));
+	memcpy(results.rm_results, results.temp_results, sizeof(results.rm_results));
 
-	printf("RM Finished!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\n");
+	printf("RM Finished\n\n");
 
 	reset_vectors();
-
-	id_priority_sort_ascending(tasks_period, NUMBER_OF_TASKS); //Sorts the array based on the EDF algorithim and get first task.
 
 	for (int current_cycle = 0; current_cycle < lcm && algorithim[1] != 0; current_cycle++) {
 		printf("Estoy en ciclo %d ->", current_cycle);
@@ -289,23 +249,11 @@ int  main(int argc, char const *argv[]) {
 		execute_task(current_task_idx, current_cycle);
 	}
 
-	memcpy(edf_results, temp_results, sizeof(rm_results));
+	memcpy(results.edf_results, results.temp_results, sizeof(results.rm_results));
 
-	printf("EDF Finished!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\n");
+	printf("EDF Finished\n\n");
 
 	reset_vectors();
-
-	// calculate_laxity(0);
-	//
-	// id_priority_sort_ascending(tasks_laxity, NUMBER_OF_TASKS); //Sorts the array based on the EDF algorithim and get first task.
-
-	// for (int i = 0; i < NUMBER_OF_TASKS; i++) {
-	// 	printf("task id %d laxiity %d\n", i, tasks_laxity[i]);
-	// }
-	//
-	// for (int i = 0; i < NUMBER_OF_TASKS; i++) {
-	// 	printf("tasks_id_sorted %d\n", tasks_id_sorted[i]);
-	// }
 
 	for (int current_cycle = 0; current_cycle < lcm && algorithim[2] != 0; current_cycle++) {
 		printf("Estoy en ciclo %d ->", current_cycle);
@@ -316,39 +264,42 @@ int  main(int argc, char const *argv[]) {
 		execute_task(current_task_idx, current_cycle);
 	}
 
-	memcpy(llf_results, temp_results, sizeof(rm_results));
+	memcpy(results.llf_results, results.temp_results, sizeof(results.rm_results));
+
+	printf("LLF Finished");
 
 
-
-	printf("LLF Finished!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-
-
+/////////////////////////////////////Printing Vectors ////////////////////////////////////////////////
 	printf("\nRM TIME TABLE\n");
 
-	for (int j = 0; j < NUMBER_OF_TASKS; j++) {
+	for (int j = 0; j < number_of_tasks; j++) {
 		for (int i = 0; i < lcm; i++) {
-			printf("%d | ", rm_results[i][j]);
+			printf("%d | ", results.rm_results[i][j]);
 		}
 		printf("\n");
 	}
 
 	printf("\nEDF TIME TABLE\n");
 
-	for (int j = 0; j < NUMBER_OF_TASKS; j++) {
+	for (int j = 0; j < number_of_tasks; j++) {
 		for (int i = 0; i < lcm; i++) {
-			printf("%d | ", edf_results[i][j]);
+			printf("%d | ", results.edf_results[i][j]);
 		}
 		printf("\n");
 	}
 
 	printf("\nLLF TIME TABLE\n");
 
-	for (int j = 0; j < NUMBER_OF_TASKS; j++) {
+	for (int j = 0; j < number_of_tasks; j++) {
 		for (int i = 0; i < lcm; i++) {
-			printf("%d | ", llf_results[i][j]);
+			printf("%d | ", results.llf_results[i][j]);
 		}
 		printf("\n");
 	}
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 
 	return 0;
+
 }
