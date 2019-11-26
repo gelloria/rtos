@@ -29,7 +29,7 @@ void reset_vectors() {
 	memcpy(tasks_queue_id, tasks_id_original, MAX_NUMBER_OF_TASKS);
 	memcpy(tasks_ctime_pending, tasks_ctime, MAX_NUMBER_OF_TASKS);
 	memset(task_state, 0, MAX_NUMBER_OF_TASKS);
-	memset(results.temp_results, 0, MAX_NUMBER_OF_TASKS);
+	memset(results.temp_results, 0, sizeof(results.temp_results));
 }
 
 void id_priority_sort_ascending(int reference_array[]){

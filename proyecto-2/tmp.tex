@@ -11,12 +11,39 @@
 INTRODUCTION
 \end{frame}
 \begin{frame}
+EARLIEST DEADLINE FIRST
 \begin{table}[]
 \resizebox{\textwidth}{!}{
-\begin{tabular}{|l|l|l|l|l|l|l|l|l|l|l|l|l|l|l|l|l|l|l|} 
+\begin{tabular}{|l|l|l|l|l|l|l|l|l|l|l|} 
 \hline 
-T & & & & & & & & & & & & & & & & & & \\ \hline 
-1 &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ \\ 2 &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ \\ 3 &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ \\ 4 &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ \\ 5 &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ \\ 6 &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ &$\blacksquare$ \\ 
+T & & & & & & & & & & \\ \hline 
+1 &$\blacksquare$ & & & & &$\blacksquare$ & & & & \\ 2 & &$\blacksquare$ &$\blacksquare$ & & & & & & & \\ 3 & & & &$\blacksquare$ &$\blacksquare$ & & & & & \\ 
+\hline
+\end{tabular}
+}
+\end{table}
+\end{frame}
+\begin{frame}
+RATE MONOTONIC
+\begin{table}[]
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|l|l|l|l|l|l|l|l|l|l|} 
+\hline 
+T & & & & & & & & & & \\ \hline 
+1 &$\blacksquare$ & & & & &$\blacksquare$ & & & & \\ 2 & & & & & & & & & & \\ 3 & & & & & & & & & & \\ 
+\hline
+\end{tabular}
+}
+\end{table}
+\end{frame}
+\begin{frame}
+LEAST LAXITY FIRST
+\begin{table}[]
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|l|l|l|l|l|l|l|l|l|l|} 
+\hline 
+T & & & & & & & & & & \\ \hline 
+1 & & & & & &$\blacksquare$ & & & & \\ 2 & &$\blacksquare$ &$\blacksquare$ & & & & & & & \\ 3 & & & &$\blacksquare$ &$\blacksquare$ & & & & & \\ 
 \hline
 \end{tabular}
 }

@@ -45,7 +45,7 @@ void reset_vectors() {
 	memcpy(tasks_queue_id, tasks_id_original, MAX_NUMBER_OF_TASKS);
 	memcpy(tasks_ctime_pending, tasks_ctime, MAX_NUMBER_OF_TASKS);
 	memset(task_state, 0, MAX_NUMBER_OF_TASKS);
-	memset(results.temp_results, 0, MAX_NUMBER_OF_TASKS);
+	memset(results.temp_results, 0, sizeof(results.temp_results));
 }
 
 void id_priority_sort_ascending(int reference_array[]){
@@ -187,6 +187,7 @@ int get_next_task_llf (){
 }
 
 void build_matrix(int current_cycle, int id_task) {
+	printf("Current Task (%d) \n", id_task+1);
 	results.temp_results[current_cycle][id_task] = id_task+1;
 }
 
@@ -201,7 +202,6 @@ void execute_task(int current_task_idx, int current_cycle) {
 
 		if ( current_tasks_ctime_pending > 0 && task_state[current_task_id] == 1) {
 			build_matrix(current_cycle, current_task_id);
-			printf("Current Task (%d) \n", current_task_id);
 			current_tasks_ctime_pending--; //Reduces ctime by one as it just executed.
 			tasks_ctime_pending[current_task_id] = current_tasks_ctime_pending;
 		}
@@ -297,8 +297,6 @@ int  main(int argc, char const *argv[]) {
 		printf("\n");
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 
 	return 0;
 
