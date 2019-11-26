@@ -36,7 +36,7 @@ int tasks_next_deadline[MAX_NUMBER_OF_TASKS];
 
 
 struct output_matrix results;
-struct tasks list_of_tasks[MAX_NUMBER_OF_TASKS];
+// struct tasks list_of_tasks[MAX_NUMBER_OF_TASKS];
 
 
 int lcm = 18;
@@ -223,7 +223,7 @@ int  main(int argc, char const *argv[]) {
 
 	int current_task_idx ,continue_loop, non_schedulable;
 
-	id_priority_sort_ascending(tasks_ctime); //Sorts the array based on the RM algorithim and get first task.
+	id_priority_sort_ascending(tasks_period); //Sorts the array based on the RM algorithim and get first task.
 
 	int algorithim[3] = {1,1,1}; //To enable the for loops for the algorithms.
 
