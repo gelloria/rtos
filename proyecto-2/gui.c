@@ -1,5 +1,6 @@
 #include <gtk/gtk.h>
 #include <string.h>
+#include "latex_template.h"
 
 GtkWidget *entry_0_exc_time;
 GtkWidget *entry_1_exc_time;
@@ -112,6 +113,21 @@ void get_entries_data(){
   g_print ("entry_3_period contents: %d\n", entry_3_text_period_int);
   g_print ("entry_4_period contents: %d\n", entry_4_text_period_int);
   g_print ("entry_5_period contents: %d\n", entry_5_text_period_int);
+
+  // Assign the values to the scheduler matrix
+  tasks_ctime[0] = entry_0_exec_time_int;
+  tasks_ctime[1] = entry_1_exec_time_int;
+  tasks_ctime[2] = entry_2_exec_time_int;
+  tasks_ctime[3] = entry_3_exec_time_int;
+  tasks_ctime[4] = entry_4_exec_time_int;
+  tasks_ctime[5] = entry_5_exec_time_int;
+
+  tasks_period[0] = entry_0_text_period_int;
+  tasks_period[1] = entry_1_text_period_int;
+  tasks_period[2] = entry_2_text_period_int;
+  tasks_period[3] = entry_3_text_period_int;
+  tasks_period[4] = entry_4_text_period_int;
+  tasks_period[5] = entry_5_text_period_int;
 }
 
 int verify_values(){
@@ -144,8 +160,7 @@ static void run_scheduler (void)
   get_entries_data();
   int values_are_wrong = verify_values();
 
-  // TODO. En lugar de hacer exit, no llamar al scheduler
-  if(values_are_wrong) exit(0);
+  if(!values_are_wrong) execute_scheduler();
 }
 
 static void activate(GtkApplication *app, gpointer user_data)

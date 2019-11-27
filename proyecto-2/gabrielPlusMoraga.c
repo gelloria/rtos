@@ -10,6 +10,54 @@ int tasks_queue_id[MAX_NUMBER_OF_TASKS];
 int tasks_laxity[MAX_NUMBER_OF_TASKS];
 int tasks_next_deadline[MAX_NUMBER_OF_TASKS];
 
+int all_in_one = 0;
+int lcm = COLUMNS;
+int number_of_tasks = ROWS;
+
+char *tex[] = {"\\documentclass{beamer}",
+"\\usepackage{amssymb}",
+"\\usepackage{graphicx}",
+"\\title{Basic presentation}",
+"\\begin{document}",
+"\\begin{frame}",
+"\\titlepage",
+"\\end{frame}",
+"\\begin{frame}",
+"\\section{INTRODUCTION}",
+"INTRODUCTION",
+"\\end{frame}",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"\\end{document}"};
+
 void reset_vectors() {
 	memcpy(tasks_queue_id, tasks_id_original, MAX_NUMBER_OF_TASKS);
 	memcpy(tasks_ctime_pending, tasks_ctime, MAX_NUMBER_OF_TASKS);
@@ -42,7 +90,6 @@ void id_priority_sort_ascending(int reference_array[]){
 	}
 
 	memcpy(reference_array, temp_sorted_array, sizeof(temp_sorted_array));
-
 }
 
 int enable_task_based_on_period(int current_cycle) {
@@ -189,7 +236,58 @@ void calculate_laxity(int current_cycle) {
 	}
 }
 
-int  main(int argc, char const *argv[]) {
+int table_write(FILE* file, int matrix[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS], int rm, int edf, int llf){
+
+  /*Counter variables for the loop*/
+  int i, j;
+
+	if (!all_in_one) {
+		fprintf (file, "\\begin{frame}\n");
+	}
+	if (rm) {
+		fprintf (file, "RATE MONOTONIC\n");
+	}
+	if (edf) {
+		fprintf (file, "EARLIEST DEADLINE FIRST\n");
+	}
+	if (llf) {
+		fprintf (file, "LEAST LAXITY FIRST\n");
+	}
+
+	fprintf (file, "\\begin{table}[]\n");
+	fprintf (file, "\\resizebox{\\textwidth}{!}{\n");
+  fprintf (file, "\\begin{tabular}{");
+  for (i = 0; i < lcm+1; i++) {fprintf (file, "|l");}
+  fprintf (file, "|} \n");
+  fprintf (file, "\\hline \n");
+  fprintf (file, "T");
+  for (i = 0; i < lcm; i++) {fprintf (file, " &");}
+  fprintf (file, " \\\\ \\hline \n");
+
+  for(i=0; i < number_of_tasks; i++) {
+    fprintf (file, "%d &", i+1);
+     for(j=0;j < lcm;j++) {
+       if(matrix[j][i]){
+         fprintf (file, "$\\blacksquare$");
+       }
+      if(j != lcm - 1)
+        fprintf (file, " &");
+     }
+     fprintf (file, " \\\\ ");
+  }
+  fprintf (file, "\n");
+	fprintf (file, "\\hline\n");
+	fprintf (file, "\\end{tabular}\n");
+	fprintf (file, "}\n");
+	fprintf (file, "\\end{table}\n");
+
+	if (!all_in_one) {
+		fprintf (file, "\\end{frame}\n");
+	}
+  return 0;
+}
+
+int execute_scheduler() {
 
 	int current_task_idx ,continue_loop, non_schedulable;
 
