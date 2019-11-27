@@ -1,14 +1,15 @@
 #include <unistd.h>
 
 #define LINE_NUM 43
-#define TABLE_START 16
-#define TABLE2_START 26
-#define TABLE3_START 36
+#define TABLE_START 12
+#define TABLE2_START 22
+#define TABLE3_START 32
 #define ROWS 3
-#define COLUMNS 10
+#define COLUMNS 18
 
-int lcm = 10;
+int lcm = COLUMNS;
 int number_of_tasks = ROWS;
+
 
 #define MAX_NUMBER_OF_TASKS 6
 #define MAX_HYPERPERIOD 1000
@@ -18,10 +19,18 @@ struct output_matrix {
 	int rm_results[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS];
 	int edf_results[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS];
 	int llf_results[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS];
+	int rm_val;
+	int edf_val;
+	int llf_val;
 };
 
 struct output_matrix results;
 // struct tasks list_of_tasks[MAX_NUMBER_OF_TASKS];
+
+int tasks_ctime[MAX_NUMBER_OF_TASKS] = {1, 2, 3};
+int tasks_period[MAX_NUMBER_OF_TASKS] = {6, 9, 18};
+
+int all_in_one = 1;
 
 char *tex[] = {"\\documentclass{beamer}",
 "\\usepackage{amssymb}",
@@ -35,62 +44,58 @@ char *tex[] = {"\\documentclass{beamer}",
 "\\section{INTRODUCTION}",
 "INTRODUCTION",
 "\\end{frame}",
-"\\begin{frame}",
-"EARLIEST DEADLINE FIRST",
-"\\begin{table}[]",
-"\\resizebox{\\textwidth}{!}{",
-"c1f1 & c2f1 \\\\ c1f2 & c2f2",
-"\\hline",
-"\\end{tabular}",
-"}",
-"\\end{table}",
-"\\end{frame}",
-"\\begin{frame}",
-"RATE MONOTONIC",
-"\\begin{table}[]",
-"\\resizebox{\\textwidth}{!}{",
-"c1f1 & c2f1 \\\\ c1f2 & c2f2",
-"\\hline",
-"\\end{tabular}",
-"}",
-"\\end{table}",
-"\\end{frame}",
-"\\begin{frame}",
-"LEAST LAXITY FIRST",
-"\\begin{table}[]",
-"\\resizebox{\\textwidth}{!}{",
-"c1f1 & c2f1 \\\\ c1f2 & c2f2",
-"\\hline",
-"\\end{tabular}",
-"}",
-"\\end{table}",
-"\\end{frame}",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
 "\\end{document}"};
 
-// int llenar_matricita(){
-//    /*Counter variables for the loop*/
-//    int i, j;
-//    for(i=0; i < ROWS; i++) {
-//       for(j=0;j < COLUMNS;j++) {
-//          execution_slots[i][j] = 1;
-//       }
-//    }
-//    // Laying array elements
-//    printf("Two Dimensional array elements:\n");
-//    for(i=0; i < ROWS; i++) {
-//       for(j=0;j < COLUMNS;j++) {
-//          printf("%d ", execution_slots[i][j]);
-//          if(j == COLUMNS){
-//             printf("\n");
-//          }
-//       }
-//    }
-//    return 0;
-// }
 
-int table_write(FILE* file, int matrix[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS]){
+int table_write(FILE* file, int matrix[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS], int rm, int edf, int llf){
   /*Counter variables for the loop*/
   int i, j;
+
+	if (!all_in_one) {
+		fprintf (file, "\\begin{frame}\n");
+	}
+	if (rm) {
+		fprintf (file, "RATE MONOTONIC\n");
+	}
+	if (edf) {
+		fprintf (file, "EARLIEST DEADLINE FIRST\n");
+	}
+	if (llf) {
+		fprintf (file, "LEAST LAXITY FIRST\n");
+	}
+
+	fprintf (file, "\\begin{table}[]\n");
+	fprintf (file, "\\resizebox{\\textwidth}{!}{\n");
   fprintf (file, "\\begin{tabular}{");
   for (i = 0; i < lcm+1; i++) {fprintf (file, "|l");}
   fprintf (file, "|} \n");
@@ -111,5 +116,13 @@ int table_write(FILE* file, int matrix[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS]){
      fprintf (file, " \\\\ ");
   }
   fprintf (file, "\n");
+	fprintf (file, "\\hline\n");
+	fprintf (file, "\\end{tabular}\n");
+	fprintf (file, "}\n");
+	fprintf (file, "\\end{table}\n");
+
+	if (!all_in_one) {
+		fprintf (file, "\\end{frame}\n");
+	}
   return 0;
 }

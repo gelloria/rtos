@@ -3,27 +3,12 @@
 #include <stdlib.h>
 #include "latex_template.h"
 
-
-// struct tasks {
-// 	int id;
-// 	int period;
-// 	int ctime;
-// 	int state;
-// 	int laxity;
-// 	int next_deadline;
-// 	int ctime_pending;
-// };
-
-int tasks_ctime[MAX_NUMBER_OF_TASKS] = {1, 2, 3};
-int tasks_period[MAX_NUMBER_OF_TASKS] = {5, 5, 5};
-
 int tasks_id_original[MAX_NUMBER_OF_TASKS] = {0, 1, 2, 3 ,4 , 5};
 int tasks_ctime_pending[MAX_NUMBER_OF_TASKS];
 int task_state[MAX_NUMBER_OF_TASKS];
 int tasks_queue_id[MAX_NUMBER_OF_TASKS];
 int tasks_laxity[MAX_NUMBER_OF_TASKS];
 int tasks_next_deadline[MAX_NUMBER_OF_TASKS];
-
 
 void reset_vectors() {
 	memcpy(tasks_queue_id, tasks_id_original, MAX_NUMBER_OF_TASKS);
@@ -252,6 +237,9 @@ int  main(int argc, char const *argv[]) {
 
 	printf("LLF Finished");
 
+	results.rm_val = 1;
+	results.edf_val = 1;
+	results.llf_val = 1;
 
 /////////////////////////////////////Printing Vectors ////////////////////////////////////////////////
 	printf("\nRM TIME TABLE\n");
@@ -285,13 +273,19 @@ int  main(int argc, char const *argv[]) {
   FILE* file = fopen("tmp.tex", "w");
   for(int j = 0; j < LINE_NUM;j++){
     printf("i %d\n", j);
-    if (j == TABLE_START) {
-      table_write(file, results.edf_results);
+    if ((j == TABLE_START)&&(results.edf_val)) {
+			if (all_in_one) {
+				fprintf (file, "\\begin{frame}\n");
+			}
+      table_write(file, results.edf_results,0,1,0);
     }
-		else if (j == TABLE2_START) {
-      table_write(file, results.rm_results);
-    }else if (j == TABLE3_START) {
-      table_write(file, results.llf_results);
+		else if ((j == TABLE2_START)&&(results.rm_val)) {
+      table_write(file, results.rm_results,1,0,0);
+    }else if ((j == TABLE3_START)&&(results.llf_val)) {
+      table_write(file, results.llf_results,0,0,1);
+			if (all_in_one) {
+				fprintf (file, "\\end{frame}\n");
+			}
     } else {
       fprintf (file, "%s", tex[j]);
       fprintf (file, "\n");
