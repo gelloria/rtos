@@ -11,7 +11,7 @@ int tasks_laxity[MAX_NUMBER_OF_TASKS];
 int tasks_next_deadline[MAX_NUMBER_OF_TASKS];
 
 int all_in_one = 0;
-int lcm = COLUMNS;
+int lcm;
 int number_of_tasks = ROWS;
 
 char *tex[] = {"\\documentclass{beamer}",
@@ -57,6 +57,29 @@ char *tex[] = {"\\documentclass{beamer}",
 "",
 "",
 "\\end{document}"};
+
+int lcm_calculation(int a, int b)
+{
+    int m = 1;
+
+    while(m%a || m%b) m++;
+
+    return m;
+}
+
+int array_lcm(int array[6], int size)
+{
+  int result = 0;
+  result = array[0];
+
+  for (int i = 1; i < size; i++)
+  {
+    if (array[i]) {
+      result = lcm_calculation(result, array[i]);
+    }
+  }
+  return result;
+}
 
 void reset_vectors() {
 	memcpy(tasks_queue_id, tasks_id_original, MAX_NUMBER_OF_TASKS);
@@ -290,6 +313,10 @@ int table_write(FILE* file, int matrix[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS], in
 int execute_scheduler() {
 
 	int current_task_idx ,continue_loop, non_schedulable;
+
+	// Get the LCM of the period array
+	lcm = array_lcm(tasks_period, 6);
+	printf("LCM: %d\n", lcm);
 
 	id_priority_sort_ascending(tasks_period); //Sorts the array based on the RM algorithim and get first task.
 
