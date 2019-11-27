@@ -158,7 +158,7 @@ int verify_values(){
 }
 
 void set_scheduler_variables(){
-  all_in_one = use_multiple_page;
+  all_in_one = !use_multiple_page;
 }
 
 static void run_scheduler(void)

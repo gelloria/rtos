@@ -329,6 +329,7 @@ int table_write(FILE* file, int matrix[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS], in
 
 int execute_scheduler() {
 	int current_task_idx ,continue_loop, non_schedulable;
+  reset_vectors();
 
 	// Get the LCM of the period array
 	lcm = array_lcm(tasks_period, 6);
@@ -341,7 +342,7 @@ int execute_scheduler() {
 	int algorithim[3] = {1,1,1};
 
 	for (int current_cycle = 0; current_cycle < lcm && algorithim[0] != 0; current_cycle++) {
-		printf("Estoy en ciclo %d -> ", current_cycle);
+		//printf("Estoy en ciclo %d -> ", current_cycle);
 
 		non_schedulable  = enable_task_based_on_period(current_cycle);
 		continue_loop     = deadline_finish (non_schedulable);
@@ -357,7 +358,7 @@ int execute_scheduler() {
 	reset_vectors();
 
 	for (int current_cycle = 0; current_cycle < lcm && algorithim[1] != 0; current_cycle++) {
-		printf("Estoy en ciclo %d ->", current_cycle);
+		//printf("Estoy en ciclo %d ->", current_cycle);
 		non_schedulable  = enable_task_based_on_period(current_cycle);
 		continue_loop     = deadline_finish (non_schedulable); if (continue_loop == 0) break;
 		current_task_idx  = get_next_task_edf() ;
@@ -371,7 +372,7 @@ int execute_scheduler() {
 	reset_vectors();
 
 	for (int current_cycle = 0; current_cycle < lcm && algorithim[2] != 0; current_cycle++) {
-		printf("Estoy en ciclo %d ->", current_cycle);
+		//printf("Estoy en ciclo %d ->", current_cycle);
 		non_schedulable  = enable_task_based_on_period(current_cycle);
 		continue_loop     = deadline_finish (non_schedulable); if (continue_loop == 0) break;
 		calculate_laxity(current_cycle);
@@ -386,10 +387,6 @@ int execute_scheduler() {
 	results.rm_val = use_rm;
 	results.edf_val = use_edf;
 	results.llf_val = use_llf;
-
-  printf("USE RM %d\n", results.rm_val);
-  printf("USE EDF %d\n", results.edf_val);
-  printf("USE LLF %d\n", results.llf_val);
 
 /////////////////////////////////////Printing Vectors ////////////////////////////////////////////////
 	printf("\nRM TIME TABLE\n");
@@ -422,7 +419,6 @@ int execute_scheduler() {
 
   FILE* file = fopen("tmp.tex", "w");
   for(int j = 0; j < LINE_NUM;j++){
-    printf("i %d\n", j);
     if ((j == TABLE_START)&&(results.edf_val)) {
 			if (all_in_one) {
 				fprintf (file, "\\begin{frame}\n");
