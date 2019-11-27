@@ -28,6 +28,9 @@ struct output_matrix {
 	int rm_val;
 	int edf_val;
 	int llf_val;
+	int rm_error;
+	int edf_error;
+	int llf_error;
 };
 
 struct output_matrix results;

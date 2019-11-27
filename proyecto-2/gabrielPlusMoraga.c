@@ -10,7 +10,9 @@ int tasks_queue_id[MAX_NUMBER_OF_TASKS];
 int tasks_laxity[MAX_NUMBER_OF_TASKS];
 int tasks_next_deadline[MAX_NUMBER_OF_TASKS];
 
+int all_in_one = 0;
 int lcm;
+int number_of_tasks = ROWS;
 
 char *tex[] = {"\\documentclass{beamer}",
 "\\usepackage{amssymb}",
@@ -91,7 +93,6 @@ void id_priority_sort_ascending(int reference_array[]){
 	int temp_sorted_array[number_of_tasks];
 
 	memcpy(temp_sorted_array, reference_array, sizeof(temp_sorted_array));
-	memcpy(tasks_queue_id, tasks_id_original, sizeof(tasks_id_original)); //Clone ID vector so that it can be sorted based on reference array priority.
 
 	for (int i = 0; i < number_of_tasks; i++)
 	{
@@ -117,8 +118,6 @@ int enable_task_based_on_period(int current_cycle) {
 
 	int non_schedulable = 0;
 
-  printf("NUMBER OF TASKS %d\n", number_of_tasks);
-
 	for (int i = 0; i < number_of_tasks; i++) {
 		if (current_cycle%tasks_period[i] == 0) {
 			task_state[i] = 1;  //enable task to run;
@@ -126,8 +125,7 @@ int enable_task_based_on_period(int current_cycle) {
 			// printf("se cumplio periodo de la tarea %d, estado => %d\n", i, task_state[i]);
 
 			/////////////// Only for EDF //////////////////
-      //now that task has been re-enabled calculate next deadline.
-			tasks_next_deadline[i] = current_cycle+tasks_period[i];
+			tasks_next_deadline[i] = current_cycle+tasks_period[i]; //now that task has been re-enabled calculate next deadline.
 			///////////////////////////////////////////////
 
 			if (tasks_ctime_pending[i] == 0) { //if task finished then it should be reseted here.
@@ -195,7 +193,7 @@ int get_next_task_rm() {
 		}
 
 	} else {
-		current_task_idx = -1; //Enables a flag that means no tasks to run.
+		current_task_idx = -1; //Enables a deadline that means no tasks to run.
 	}
 
 return current_task_idx;
@@ -260,8 +258,7 @@ void calculate_laxity(int current_cycle) {
 	}
 }
 
-int table_write(FILE* file, int matrix[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS], int rm, int edf, int llf)
-{
+int table_write(FILE* file, int matrix[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS], int rm, int edf, int llf){
 
   /*Counter variables for the loop*/
   int i, j;
@@ -270,14 +267,31 @@ int table_write(FILE* file, int matrix[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS], in
 		fprintf (file, "\\begin{frame}\n");
 	}
 	if (rm) {
-		fprintf (file, "RATE MONOTONIC\n");
+		fprintf (file, "RATE MONOTONIC - ");
+    if (results.rm_error) {
+      fprintf (file, " \\textcolor{red}{DEADLINE NOT MET}\n");
+    }else{
+      fprintf (file, "\n");
+    }
 	}
 	if (edf) {
-		fprintf (file, "EARLIEST DEADLINE FIRST\n");
+		fprintf (file, "EARLIEST DEADLINE FIRST -");
+    if (results.edf_error) {
+      fprintf (file, " \\textcolor{red}{DEADLINE NOT MET}\n");
+    }else{
+      fprintf (file, "\n");
+    }
 	}
 	if (llf) {
-		fprintf (file, "LEAST LAXITY FIRST\n");
+		fprintf (file, "LEAST LAXITY FIRST - ");
+    if (results.llf_error) {
+      fprintf (file, " \\textcolor{red}{DEADLINE NOT MET}\n");
+    }else{
+      fprintf (file, "\n");
+    }
 	}
+
+
 
 	fprintf (file, "\\begin{table}[]\n");
 	fprintf (file, "\\resizebox{\\textwidth}{!}{\n");
@@ -328,25 +342,29 @@ int table_write(FILE* file, int matrix[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS], in
 }
 
 int execute_scheduler() {
+
 	int current_task_idx ,continue_loop, non_schedulable;
   reset_vectors();
 
 	// Get the LCM of the period array
 	lcm = array_lcm(tasks_period, 6);
-	printf("LCM is: %d\n", lcm);
+	printf("LCM: %d\n", lcm);
+  memcpy(tasks_queue_id, tasks_id_original, sizeof(tasks_id_original)); //Clone ID vector so that it can be sorted based on reference array priority.
 
-  //Sorts the array based on the RM algorithim and get first task.
-	id_priority_sort_ascending(tasks_period);
+	id_priority_sort_ascending(tasks_period); //Sorts the array based on the RM algorithim and get first task.
 
-  //To enable the for loops for the algorithms.
-	int algorithim[3] = {1,1,1};
+	int algorithim[3] = {1,1,1}; //To enable the for loops for the algorithms.
 
 	for (int current_cycle = 0; current_cycle < lcm && algorithim[0] != 0; current_cycle++) {
 		//printf("Estoy en ciclo %d -> ", current_cycle);
 
 		non_schedulable  = enable_task_based_on_period(current_cycle);
 		continue_loop     = deadline_finish (non_schedulable);
-    if (continue_loop == 0) break;
+    if (continue_loop == 0) {
+      printf("SE DESPICHO TERE\n");
+      results.rm_error = 1;
+      break;
+    }
 		current_task_idx  = get_next_task_rm() ;
 		execute_task(current_task_idx, current_cycle);
 	}
@@ -360,7 +378,12 @@ int execute_scheduler() {
 	for (int current_cycle = 0; current_cycle < lcm && algorithim[1] != 0; current_cycle++) {
 		//printf("Estoy en ciclo %d ->", current_cycle);
 		non_schedulable  = enable_task_based_on_period(current_cycle);
-		continue_loop     = deadline_finish (non_schedulable); if (continue_loop == 0) break;
+		continue_loop     = deadline_finish (non_schedulable);
+    if (continue_loop == 0) {
+      printf("SE DESPICHO TERE\n");
+      results.edf_error = 1;
+      break;
+    }
 		current_task_idx  = get_next_task_edf() ;
 		execute_task(current_task_idx, current_cycle);
 	}
@@ -374,7 +397,12 @@ int execute_scheduler() {
 	for (int current_cycle = 0; current_cycle < lcm && algorithim[2] != 0; current_cycle++) {
 		//printf("Estoy en ciclo %d ->", current_cycle);
 		non_schedulable  = enable_task_based_on_period(current_cycle);
-		continue_loop     = deadline_finish (non_schedulable); if (continue_loop == 0) break;
+		continue_loop     = deadline_finish (non_schedulable);
+    if (continue_loop == 0) {
+      results.llf_error = 1;
+      printf("SE DESPICHO TERE\n");
+      break;
+    }
 		calculate_laxity(current_cycle);
 		current_task_idx  = get_next_task_llf() ;
 		execute_task(current_task_idx, current_cycle);
