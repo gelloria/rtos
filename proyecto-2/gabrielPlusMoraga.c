@@ -10,9 +10,7 @@ int tasks_queue_id[MAX_NUMBER_OF_TASKS];
 int tasks_laxity[MAX_NUMBER_OF_TASKS];
 int tasks_next_deadline[MAX_NUMBER_OF_TASKS];
 
-int all_in_one = 0;
 int lcm;
-int number_of_tasks = ROWS;
 
 char *tex[] = {"\\documentclass{beamer}",
 "\\usepackage{amssymb}",
@@ -119,6 +117,8 @@ int enable_task_based_on_period(int current_cycle) {
 
 	int non_schedulable = 0;
 
+  printf("NUMBER OF TASKS %d\n", number_of_tasks);
+
 	for (int i = 0; i < number_of_tasks; i++) {
 		if (current_cycle%tasks_period[i] == 0) {
 			task_state[i] = 1;  //enable task to run;
@@ -126,7 +126,8 @@ int enable_task_based_on_period(int current_cycle) {
 			// printf("se cumplio periodo de la tarea %d, estado => %d\n", i, task_state[i]);
 
 			/////////////// Only for EDF //////////////////
-			tasks_next_deadline[i] = current_cycle+tasks_period[i]; //now that task has been re-enabled calculate next deadline.
+      //now that task has been re-enabled calculate next deadline.
+			tasks_next_deadline[i] = current_cycle+tasks_period[i];
 			///////////////////////////////////////////////
 
 			if (tasks_ctime_pending[i] == 0) { //if task finished then it should be reseted here.
@@ -259,7 +260,8 @@ void calculate_laxity(int current_cycle) {
 	}
 }
 
-int table_write(FILE* file, int matrix[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS], int rm, int edf, int llf){
+int table_write(FILE* file, int matrix[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS], int rm, int edf, int llf)
+{
 
   /*Counter variables for the loop*/
   int i, j;
@@ -326,21 +328,24 @@ int table_write(FILE* file, int matrix[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS], in
 }
 
 int execute_scheduler() {
-
 	int current_task_idx ,continue_loop, non_schedulable;
 
 	// Get the LCM of the period array
 	lcm = array_lcm(tasks_period, 6);
-	printf("LCM: %d\n", lcm);
+	printf("LCM is: %d\n", lcm);
 
-	id_priority_sort_ascending(tasks_period); //Sorts the array based on the RM algorithim and get first task.
+  //Sorts the array based on the RM algorithim and get first task.
+	id_priority_sort_ascending(tasks_period);
 
-	int algorithim[3] = {1,1,1}; //To enable the for loops for the algorithms.
+  //To enable the for loops for the algorithms.
+	int algorithim[3] = {1,1,1};
 
 	for (int current_cycle = 0; current_cycle < lcm && algorithim[0] != 0; current_cycle++) {
 		printf("Estoy en ciclo %d -> ", current_cycle);
+
 		non_schedulable  = enable_task_based_on_period(current_cycle);
-		continue_loop     = deadline_finish (non_schedulable); if (continue_loop == 0) break;
+		continue_loop     = deadline_finish (non_schedulable);
+    if (continue_loop == 0) break;
 		current_task_idx  = get_next_task_rm() ;
 		execute_task(current_task_idx, current_cycle);
 	}
@@ -378,9 +383,13 @@ int execute_scheduler() {
 
 	printf("LLF Finished");
 
-	results.rm_val = 1;
-	results.edf_val = 1;
-	results.llf_val = 1;
+	results.rm_val = use_rm;
+	results.edf_val = use_edf;
+	results.llf_val = use_llf;
+
+  printf("USE RM %d\n", results.rm_val);
+  printf("USE EDF %d\n", results.edf_val);
+  printf("USE LLF %d\n", results.llf_val);
 
 /////////////////////////////////////Printing Vectors ////////////////////////////////////////////////
 	printf("\nRM TIME TABLE\n");

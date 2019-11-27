@@ -41,11 +41,6 @@ const gchar *entry_3_text_period;
 const gchar *entry_4_text_period;
 const gchar *entry_5_text_period;
 
-int use_rm = 0;
-int use_edf = 0;
-int use_llf = 0;
-int use_multiple_page = 0;
-
 int entry_0_exec_time_int;
 int entry_1_exec_time_int;
 int entry_2_exec_time_int;
@@ -100,6 +95,7 @@ void get_entries_data(){
   entry_5_text_period_int = atoi(entry_5_text_period);
 
   // Print the results
+  /*
   g_print ("entry_0_exc_time contents: %d\n", entry_0_exec_time_int);
   g_print ("entry_1_exc_time contents: %d\n", entry_1_exec_time_int);
   g_print ("entry_2_exc_time contents: %d\n", entry_2_exec_time_int);
@@ -113,7 +109,7 @@ void get_entries_data(){
   g_print ("entry_3_period contents: %d\n", entry_3_text_period_int);
   g_print ("entry_4_period contents: %d\n", entry_4_text_period_int);
   g_print ("entry_5_period contents: %d\n", entry_5_text_period_int);
-
+  */
   // Assign the values to the scheduler matrix
   tasks_ctime[0] = entry_0_exec_time_int;
   tasks_ctime[1] = entry_1_exec_time_int;
@@ -128,6 +124,13 @@ void get_entries_data(){
   tasks_period[3] = entry_3_text_period_int;
   tasks_period[4] = entry_4_text_period_int;
   tasks_period[5] = entry_5_text_period_int;
+
+  if(!tasks_ctime[0]) number_of_tasks = 0;
+  else if(!tasks_ctime[1]) number_of_tasks = 1;
+  else if(!tasks_ctime[2]) number_of_tasks = 2;
+  else if(!tasks_ctime[3]) number_of_tasks = 3;
+  else if(!tasks_ctime[4]) number_of_tasks = 4;
+  else number_of_tasks = 5;
 }
 
 int verify_values(){
@@ -154,12 +157,17 @@ int verify_values(){
   return 0;
 }
 
-static void run_scheduler (void)
+void set_scheduler_variables(){
+  all_in_one = use_multiple_page;
+}
+
+static void run_scheduler(void)
 {
   get_checkbox_data();
   get_entries_data();
-  int values_are_wrong = verify_values();
+  set_scheduler_variables();
 
+  int values_are_wrong = verify_values();
   if(!values_are_wrong) execute_scheduler();
 }
 

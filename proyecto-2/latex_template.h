@@ -13,6 +13,12 @@
 #define MAX_HYPERPERIOD 1000
 
 int execute_scheduler();
+int all_in_one;
+int use_rm;
+int use_edf;
+int use_llf;
+int use_multiple_page;
+int number_of_tasks;
 
 struct output_matrix {
 	int temp_results[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS];
