@@ -290,8 +290,23 @@ int table_write(FILE* file, int matrix[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS], in
   for(i=0; i < number_of_tasks; i++) {
     fprintf (file, "%d &", i+1);
      for(j=0;j < lcm;j++) {
-       if(matrix[j][i]){
-         fprintf (file, "$\\blacksquare$");
+       if(matrix[j][i] == 1){
+         fprintf (file, "$\\textcolor{black}{\\blacksquare}$");
+       }
+       if(matrix[j][i] == 2){
+         fprintf (file, "$\\textcolor{red}{\\blacksquare}$");
+       }
+       if(matrix[j][i] == 3){
+         fprintf (file, "$\\textcolor{blue}{\\blacksquare}$");
+       }
+       if(matrix[j][i] == 4){
+         fprintf (file, "$\\textcolor{green}{\\blacksquare}$");
+       }
+       if(matrix[j][i] == 5){
+         fprintf (file, "$\\textcolor{yellow}{\\blacksquare}$");
+       }
+       if(matrix[j][i] == 6){
+         fprintf (file, "$\\textcolor{gray}{\\blacksquare}$");
        }
       if(j != lcm - 1)
         fprintf (file, " &");
