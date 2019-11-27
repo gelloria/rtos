@@ -5,7 +5,7 @@
 #define MAX_NUMBER_OF_TASKS 6
 #define MAX_HYPERPERIOD 1000
 
-int number_of_tasks = 2;
+int number_of_tasks = 3;
 
 struct output_matrix {
 	int temp_results[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS];
@@ -24,8 +24,8 @@ struct output_matrix {
 // 	int ctime_pending;
 // };
 
-int tasks_ctime[MAX_NUMBER_OF_TASKS] = {3, 4};
-int tasks_period[MAX_NUMBER_OF_TASKS] = {6, 9};
+int tasks_ctime[MAX_NUMBER_OF_TASKS] = {1, 2, 3};
+int tasks_period[MAX_NUMBER_OF_TASKS] = {6, 9, 18};
 
 int tasks_id_original[MAX_NUMBER_OF_TASKS] = {0, 1, 2, 3 ,4 , 5};
 int tasks_ctime_pending[MAX_NUMBER_OF_TASKS];
@@ -33,7 +33,6 @@ int task_state[MAX_NUMBER_OF_TASKS];
 int tasks_queue_id[MAX_NUMBER_OF_TASKS];
 int tasks_laxity[MAX_NUMBER_OF_TASKS];
 int tasks_next_deadline[MAX_NUMBER_OF_TASKS];
-
 
 struct output_matrix results;
 // struct tasks list_of_tasks[MAX_NUMBER_OF_TASKS];
@@ -54,6 +53,8 @@ void id_priority_sort_ascending(int reference_array[]){
 
 	memcpy(temp_sorted_array, reference_array, sizeof(temp_sorted_array));
 
+	memcpy(tasks_queue_id, tasks_id_original, sizeof(tasks_id_original)); //Clone ID vector so that it can be sorted based on reference array priority.
+
 	for (int i = 0; i < number_of_tasks; i++)
 	{
 		for (int j = i + 1; j < number_of_tasks; j++)
@@ -63,6 +64,7 @@ void id_priority_sort_ascending(int reference_array[]){
 				temp_array = reference_array[i];
 				reference_array[i] = reference_array[j];
 				reference_array[j] = temp_array;
+
 
 				temp_id = tasks_queue_id[i];
 				tasks_queue_id[i] = tasks_queue_id[j];
@@ -224,6 +226,10 @@ int  main(int argc, char const *argv[]) {
 	int current_task_idx ,continue_loop, non_schedulable;
 
 	id_priority_sort_ascending(tasks_period); //Sorts the array based on the RM algorithim and get first task.
+
+	// for (int i = 0; i < MAX_NUMBER_OF_TASKS; i++) {
+	// 	printf("task %d\n", tasks_queue_id[i]);
+	// }
 
 	int algorithim[3] = {1,1,1}; //To enable the for loops for the algorithms.
 

@@ -22,6 +22,7 @@ void id_priority_sort_ascending(int reference_array[]){
 	int temp_sorted_array[number_of_tasks];
 
 	memcpy(temp_sorted_array, reference_array, sizeof(temp_sorted_array));
+	memcpy(tasks_queue_id, tasks_id_original, sizeof(tasks_id_original)); //Clone ID vector so that it can be sorted based on reference array priority.
 
 	for (int i = 0; i < number_of_tasks; i++)
 	{
