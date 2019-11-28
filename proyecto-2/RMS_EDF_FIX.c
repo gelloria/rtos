@@ -5,13 +5,19 @@
 #define MAX_NUMBER_OF_TASKS 6
 #define MAX_HYPERPERIOD 1000
 
-int number_of_tasks = 3;
+int number_of_tasks = 2;
 
 struct output_matrix {
 	int temp_results[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS];
 	int rm_results[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS];
 	int edf_results[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS];
 	int llf_results[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS];
+	int rm_val;
+	int edf_val;
+	int llf_val;
+	int rm_error;
+	int edf_error;
+	int llf_error;
 };
 
 // struct tasks {
@@ -24,8 +30,8 @@ struct output_matrix {
 // 	int ctime_pending;
 // };
 
-int tasks_ctime[MAX_NUMBER_OF_TASKS] = {1, 2, 3};
-int tasks_period[MAX_NUMBER_OF_TASKS] = {6, 9, 18};
+int tasks_ctime[MAX_NUMBER_OF_TASKS] = {3, 12};
+int tasks_period[MAX_NUMBER_OF_TASKS] = {3, 6};
 
 int tasks_id_original[MAX_NUMBER_OF_TASKS] = {0, 1, 2, 3 ,4 , 5};
 int tasks_ctime_pending[MAX_NUMBER_OF_TASKS];
@@ -33,17 +39,19 @@ int task_state[MAX_NUMBER_OF_TASKS];
 int tasks_queue_id[MAX_NUMBER_OF_TASKS];
 int tasks_laxity[MAX_NUMBER_OF_TASKS];
 int tasks_next_deadline[MAX_NUMBER_OF_TASKS];
+int tasks_run[MAX_NUMBER_OF_TASKS];
 
 struct output_matrix results;
 // struct tasks list_of_tasks[MAX_NUMBER_OF_TASKS];
 
 
-int lcm = 18;
+int lcm = 12;
 
 void reset_vectors() {
-	memcpy(tasks_queue_id, tasks_id_original, MAX_NUMBER_OF_TASKS);
-	memcpy(tasks_ctime_pending, tasks_ctime, MAX_NUMBER_OF_TASKS);
-	memset(task_state, 0, MAX_NUMBER_OF_TASKS);
+	memcpy(tasks_queue_id, tasks_id_original, sizeof(tasks_queue_id));
+	memcpy(tasks_ctime_pending, tasks_ctime, sizeof(tasks_ctime_pending));
+	memset(task_state, 0, sizeof(task_state));
+	memset(tasks_run, 0, sizeof(tasks_run));
 	memset(results.temp_results, 0, sizeof(results.temp_results));
 }
 
@@ -98,6 +106,18 @@ int enable_task_based_on_period(int current_cycle) {
 				non_schedulable = 1;
 				break;
 			}
+		}
+	}
+	return non_schedulable;
+}
+
+int check_pending_tasks(){
+
+	int non_schedulable = 0;
+
+	for (int i = 0; i < number_of_tasks; i++) {
+		if (tasks_run[i] == 0) {
+			printf("Deadline of task %d not met\n", i);
 		}
 	}
 	return non_schedulable;
@@ -211,6 +231,7 @@ void execute_task(int current_task_idx, int current_cycle) {
 		if (current_tasks_ctime_pending == 0) {
 			tasks_ctime_pending[current_task_id] = current_task_ctime; //resets computation for next period.
 			task_state[current_task_id] = 0;  //disable task to run;
+			tasks_run[current_task_id] = 1;
 		}
 	}
 }
@@ -241,6 +262,13 @@ int  main(int argc, char const *argv[]) {
 		execute_task(current_task_idx, current_cycle);
 	}
 
+	// for (int i = 0; i < number_of_tasks; i++) {
+	// 	printf("tasks_ctime %d - tasks_ctime_pending %d\n", tasks_ctime[i], tasks_ctime_pending[i]);
+	// }
+
+	non_schedulable = check_pending_tasks();
+	if (continue_loop == 0) results.rm_error = 1;
+
 	memcpy(results.rm_results, results.temp_results, sizeof(results.rm_results));
 
 	printf("RM Finished\n\n");
@@ -254,6 +282,11 @@ int  main(int argc, char const *argv[]) {
 		current_task_idx  = get_next_task_edf() ;
 		execute_task(current_task_idx, current_cycle);
 	}
+
+	non_schedulable = check_pending_tasks();
+	if (continue_loop == 0) results.edf_error = 1;
+
+
 
 	memcpy(results.edf_results, results.temp_results, sizeof(results.rm_results));
 
@@ -269,6 +302,9 @@ int  main(int argc, char const *argv[]) {
 		current_task_idx  = get_next_task_llf() ;
 		execute_task(current_task_idx, current_cycle);
 	}
+
+	non_schedulable = check_pending_tasks();
+	if (continue_loop == 0) results.edf_error = 1;
 
 	memcpy(results.llf_results, results.temp_results, sizeof(results.rm_results));
 

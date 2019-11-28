@@ -9,6 +9,7 @@ int task_state[MAX_NUMBER_OF_TASKS];
 int tasks_queue_id[MAX_NUMBER_OF_TASKS];
 int tasks_laxity[MAX_NUMBER_OF_TASKS];
 int tasks_next_deadline[MAX_NUMBER_OF_TASKS];
+int tasks_run[MAX_NUMBER_OF_TASKS];
 
 int all_in_one = 0;
 int lcm;
@@ -104,6 +105,7 @@ void reset_vectors() {
 	memcpy(tasks_queue_id, tasks_id_original, sizeof(tasks_queue_id));
 	memcpy(tasks_ctime_pending, tasks_ctime, sizeof(tasks_ctime_pending));
 	memset(task_state, 0, sizeof(task_state));
+  memset(tasks_run, 0, sizeof(tasks_run));
 	memset(results.temp_results, 0, sizeof(results.temp_results));
 }
 
@@ -154,6 +156,18 @@ int enable_task_based_on_period(int current_cycle) {
 				non_schedulable = 1;
 				break;
 			}
+		}
+	}
+	return non_schedulable;
+}
+
+int check_pending_tasks(){
+
+	int non_schedulable = 0;
+
+	for (int i = 0; i < number_of_tasks; i++) {
+		if (tasks_run[i] == 0) {
+			printf("Deadline of task %d not met\n", i);
 		}
 	}
 	return non_schedulable;
@@ -391,6 +405,9 @@ int execute_scheduler() {
 		execute_task(current_task_idx, current_cycle);
 	}
 
+  non_schedulable = check_pending_tasks();
+  if (continue_loop == 0) results.rm_error = 1;
+
 	memcpy(results.rm_results, results.temp_results, sizeof(results.rm_results));
 
 	printf("RM Finished\n\n");
@@ -409,6 +426,9 @@ int execute_scheduler() {
 		current_task_idx  = get_next_task_edf() ;
 		execute_task(current_task_idx, current_cycle);
 	}
+
+  non_schedulable = check_pending_tasks();
+  if (continue_loop == 0) results.edf_error = 1;
 
 	memcpy(results.edf_results, results.temp_results, sizeof(results.rm_results));
 
@@ -429,6 +449,9 @@ int execute_scheduler() {
 		current_task_idx  = get_next_task_llf() ;
 		execute_task(current_task_idx, current_cycle);
 	}
+
+  non_schedulable = check_pending_tasks();
+  if (continue_loop == 0) results.llf_error = 1;
 
 	memcpy(results.llf_results, results.temp_results, sizeof(results.rm_results));
 
