@@ -3,10 +3,10 @@
 
 #include <unistd.h>
 
-#define LINE_NUM 43
-#define TABLE_START 12
-#define TABLE2_START 22
-#define TABLE3_START 32
+#define LINE_NUM 62
+#define TABLE_START 30
+#define TABLE2_START 40
+#define TABLE3_START 50
 #define ROWS 6
 #define COLUMNS 18
 #define MAX_NUMBER_OF_TASKS 6

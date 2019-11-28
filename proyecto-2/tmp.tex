@@ -1,52 +1,98 @@
 \documentclass{beamer}
 \usepackage{amssymb}
 \usepackage{graphicx}
-\title{Basic presentation}
+
+\author{Gabriel Loria, Leonardo Araya, Rolando Moraga}
+\institute{ITCR, Maestría en Ingeniería en electr\'onica \\ Dise\~no de Sistemas en Tiempo Real}
+\date{III, 2019}
+\title{Proyecto 2: Real Time Scheduling}
 \begin{document}
 \begin{frame}
 \titlepage
 \end{frame}
 \begin{frame}
-\section{INTRODUCTION}
-INTRODUCTION
+\textbf{Rate Monotonic Scheduling} \\ Is a priority assignment algorithm used in real-time operating systems with a static-priority scheduling class. The priority assigned to each task depends on its period, the task with the smallest period will be executed first. This priority will never change (static priority).
 \end{frame}
+
 \begin{frame}
-EARLIEST DEADLINE FIRST
+\textbf{Earliest Deadline First} \\ This is a scheduling algorithm for real-time operating systems, it uses the deadline of each task as criteria for choosing which task will be executed. This scheme of priority is dynamic as the deadline can change for each cycle.
+\end{frame}
+
+\begin{frame}
+\textbf{Least Laxity First} \\ This algorithm is also used in real-time operating systems, its priority is assigned based on the laxity of each task, since the laxity changes within every time unit, its priority scheme is dynamic. \\ The Laxity ($L_i$) at an $i$-instant is calculated by the deadline ($D_i$) of the task minus the computation time ($C_i$) at the same instant. \[L_i = D_i - C_i\]
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}
+EARLIEST DEADLINE FIRST -
 \begin{table}[]
 \resizebox{\textwidth}{!}{
-\begin{tabular}{|l|l|l|l|l|l|l|l|l|l|l|} 
+\begin{tabular}{|l|l|l|l|l|l|l|l|l|l|l|l|l|} 
 \hline 
-T & & & & & & & & & & \\ \hline 
-1 &$\blacksquare$ & & & & &$\blacksquare$ & & & & \\ 2 & &$\blacksquare$ &$\blacksquare$ & & & & & & & \\ 3 & & & &$\blacksquare$ &$\blacksquare$ & & & & & \\ 
+T &1 &2 &3 &4 &5 &6 &7 &8 &9 &10 &11 &12 \\ \hline 
+1 &$\textcolor{black}{\blacksquare}$ &$\textcolor{black}{\blacksquare}$ & &$\textcolor{black}{\blacksquare}$ &$\textcolor{black}{\blacksquare}$ & &$\textcolor{black}{\blacksquare}$ &$\textcolor{black}{\blacksquare}$ & &$\textcolor{black}{\blacksquare}$ &$\textcolor{black}{\blacksquare}$ & \\ 2 & & &$\textcolor{red}{\blacksquare}$ & & &$\textcolor{red}{\blacksquare}$ & & &$\textcolor{red}{\blacksquare}$ & & &$\textcolor{red}{\blacksquare}$ \\ 
 \hline
 \end{tabular}
 }
 \end{table}
 \end{frame}
+
+
+
+
+
+
+
+
+
 \begin{frame}
-RATE MONOTONIC
+RATE MONOTONIC - 
 \begin{table}[]
 \resizebox{\textwidth}{!}{
-\begin{tabular}{|l|l|l|l|l|l|l|l|l|l|l|} 
+\begin{tabular}{|l|l|l|l|l|l|l|l|l|l|l|l|l|} 
 \hline 
-T & & & & & & & & & & \\ \hline 
-1 &$\blacksquare$ & & & & &$\blacksquare$ & & & & \\ 2 & & & & & & & & & & \\ 3 & & & & & & & & & & \\ 
+T &1 &2 &3 &4 &5 &6 &7 &8 &9 &10 &11 &12 \\ \hline 
+1 &$\textcolor{black}{\blacksquare}$ &$\textcolor{black}{\blacksquare}$ & &$\textcolor{black}{\blacksquare}$ &$\textcolor{black}{\blacksquare}$ & &$\textcolor{black}{\blacksquare}$ &$\textcolor{black}{\blacksquare}$ & &$\textcolor{black}{\blacksquare}$ &$\textcolor{black}{\blacksquare}$ & \\ 2 & & &$\textcolor{red}{\blacksquare}$ & & &$\textcolor{red}{\blacksquare}$ & & &$\textcolor{red}{\blacksquare}$ & & &$\textcolor{red}{\blacksquare}$ \\ 
 \hline
 \end{tabular}
 }
 \end{table}
 \end{frame}
+
+
+
+
+
+
+
+
+
 \begin{frame}
-LEAST LAXITY FIRST
+LEAST LAXITY FIRST - 
 \begin{table}[]
 \resizebox{\textwidth}{!}{
-\begin{tabular}{|l|l|l|l|l|l|l|l|l|l|l|} 
+\begin{tabular}{|l|l|l|l|l|l|l|l|l|l|l|l|l|} 
 \hline 
-T & & & & & & & & & & \\ \hline 
-1 & & & & & &$\blacksquare$ & & & & \\ 2 & &$\blacksquare$ &$\blacksquare$ & & & & & & & \\ 3 & & & &$\blacksquare$ &$\blacksquare$ & & & & & \\ 
+T &1 &2 &3 &4 &5 &6 &7 &8 &9 &10 &11 &12 \\ \hline 
+1 &$\textcolor{black}{\blacksquare}$ &$\textcolor{black}{\blacksquare}$ & &$\textcolor{black}{\blacksquare}$ &$\textcolor{black}{\blacksquare}$ & &$\textcolor{black}{\blacksquare}$ &$\textcolor{black}{\blacksquare}$ & & &$\textcolor{black}{\blacksquare}$ & \\ 2 & & &$\textcolor{red}{\blacksquare}$ & & &$\textcolor{red}{\blacksquare}$ & & &$\textcolor{red}{\blacksquare}$ &$\textcolor{red}{\blacksquare}$ & &$\textcolor{red}{\blacksquare}$ \\ 
 \hline
 \end{tabular}
 }
 \end{table}
 \end{frame}
+
+
+
+
+
+
+
+
+
+
 \end{document}

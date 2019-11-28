@@ -17,15 +17,34 @@ int number_of_tasks = ROWS;
 char *tex[] = {"\\documentclass{beamer}",
 "\\usepackage{amssymb}",
 "\\usepackage{graphicx}",
-"\\title{Basic presentation}",
+"",
+"\\author{Gabriel Loria, Leonardo Araya, Rolando Moraga}",
+"\\institute{ITCR, Maestría en Ingeniería en electr\\'onica \\\\ Dise\\~no de Sistemas en Tiempo Real}",
+"\\date{III, 2019}",
+"\\title{Proyecto 2: Real Time Scheduling}",
 "\\begin{document}",
 "\\begin{frame}",
 "\\titlepage",
 "\\end{frame}",
 "\\begin{frame}",
-"\\section{INTRODUCTION}",
-"INTRODUCTION",
+"\\textbf{Rate Monotonic Scheduling} \\\\ Is a priority assignment algorithm used in real-time operating systems with a static-priority scheduling class. The priority assigned to each task depends on its period, the task with the smallest period will be executed first. This priority will never change (static priority).",
 "\\end{frame}",
+"",
+"\\begin{frame}",
+"\\textbf{Earliest Deadline First} \\\\ This is a scheduling algorithm for real-time operating systems, it uses the deadline of each task as criteria for choosing which task will be executed. This scheme of priority is dynamic as the deadline can change for each cycle.",
+"\\end{frame}",
+"",
+"\\begin{frame}",
+"\\textbf{Least Laxity First} \\\\ This algorithm is also used in real-time operating systems, its priority is assigned based on the laxity of each task, since the laxity changes within every time unit, its priority scheme is dynamic. \\\\ The Laxity ($L_i$) at an $i$-instant is calculated by the deadline ($D_i$) of the task minus the computation time ($C_i$) at the same instant. \\[L_i = D_i - C_i\\]",
+"\\end{frame}",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
 "",
 "",
 "",
@@ -82,9 +101,9 @@ int array_lcm(int array[6], int size)
 }
 
 void reset_vectors() {
-	memcpy(tasks_queue_id, tasks_id_original, MAX_NUMBER_OF_TASKS);
-	memcpy(tasks_ctime_pending, tasks_ctime, MAX_NUMBER_OF_TASKS);
-	memset(task_state, 0, MAX_NUMBER_OF_TASKS);
+	memcpy(tasks_queue_id, tasks_id_original, sizeof(tasks_queue_id));
+	memcpy(tasks_ctime_pending, tasks_ctime, sizeof(tasks_ctime_pending));
+	memset(task_state, 0, sizeof(task_state));
 	memset(results.temp_results, 0, sizeof(results.temp_results));
 }
 
@@ -300,7 +319,10 @@ int table_write(FILE* file, int matrix[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS], in
   fprintf (file, "|} \n");
   fprintf (file, "\\hline \n");
   fprintf (file, "T");
-  for (i = 0; i < lcm; i++) {fprintf (file, " &");}
+  for (i = 0; i < lcm; i++) {
+    fprintf (file, " &");
+    fprintf (file, "%d",i+1);
+  }
   fprintf (file, " \\\\ \\hline \n");
 
   for(i=0; i < number_of_tasks; i++) {
@@ -349,7 +371,7 @@ int execute_scheduler() {
 	// Get the LCM of the period array
 	lcm = array_lcm(tasks_period, 6);
 	printf("LCM: %d\n", lcm);
-  memcpy(tasks_queue_id, tasks_id_original, sizeof(tasks_id_original)); //Clone ID vector so that it can be sorted based on reference array priority.
+  // memcpy(tasks_queue_id, tasks_id_original, sizeof(tasks_id_original)); //Clone ID vector so that it can be sorted based on reference array priority.
 
 	id_priority_sort_ascending(tasks_period); //Sorts the array based on the RM algorithim and get first task.
 
