@@ -41,20 +41,6 @@ const gchar *entry_3_text_period;
 const gchar *entry_4_text_period;
 const gchar *entry_5_text_period;
 
-int entry_0_exec_time_int;
-int entry_1_exec_time_int;
-int entry_2_exec_time_int;
-int entry_3_exec_time_int;
-int entry_4_exec_time_int;
-int entry_5_exec_time_int;
-
-int entry_0_text_period_int;
-int entry_1_text_period_int;
-int entry_2_text_period_int;
-int entry_3_text_period_int;
-int entry_4_text_period_int;
-int entry_5_text_period_int;
-
 void get_checkbox_data(){
   use_rm = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (checkbutton_rm));
   use_edf = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (checkbutton_edf));
@@ -62,7 +48,19 @@ void get_checkbox_data(){
   use_multiple_page = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (checkbutton_multiple_page));
 }
 
-void get_entries_data(){
+int is_number(const char *string){
+
+  for (int i = 0; string[i] != '\0'; i++) {
+    if(!isdigit(string[i])){
+      printf("The passed parameter is not a number %s\n", string);
+      return 0;
+    }
+  }
+
+  return 1;
+}
+
+int get_entries_data(){
   // Get the execution time
   entry_0_text_exec_time = gtk_entry_get_text (GTK_ENTRY (entry_0_exc_time));
   entry_1_text_exec_time = gtk_entry_get_text (GTK_ENTRY (entry_1_exc_time));
@@ -78,6 +76,16 @@ void get_entries_data(){
   entry_3_text_period = gtk_entry_get_text (GTK_ENTRY (entry_3_period));
   entry_4_text_period = gtk_entry_get_text (GTK_ENTRY (entry_4_period));
   entry_5_text_period = gtk_entry_get_text (GTK_ENTRY (entry_5_period));
+
+  // Verify that all the entries are numbers
+  if(!is_number(entry_0_text_exec_time) || !is_number(entry_1_text_exec_time) ||
+    !is_number(entry_2_text_exec_time) || !is_number(entry_3_text_exec_time) ||
+    !is_number(entry_4_text_exec_time) || !is_number(entry_5_text_exec_time) ||
+    !is_number(entry_0_text_period) || !is_number(entry_1_text_period) ||
+    !is_number(entry_2_text_period) || !is_number(entry_3_text_period) ||
+    !is_number(entry_4_text_period) || !is_number(entry_5_text_period)){
+      return 1;
+    }
 
   // Cast from string to int
   entry_0_exec_time_int = atoi(entry_0_text_exec_time);
@@ -131,9 +139,12 @@ void get_entries_data(){
   else if(!tasks_ctime[3]) number_of_tasks = 3;
   else if(!tasks_ctime[4]) number_of_tasks = 4;
   else number_of_tasks = 5;
+
+  return 0;
 }
 
 int verify_values(){
+
   if(entry_0_exec_time_int > entry_0_text_period_int){
     g_print("In the task 0 the execution time is greater than the period. Insert right values.\n");
     return 1;
@@ -164,11 +175,11 @@ void set_scheduler_variables(){
 static void run_scheduler(void)
 {
   get_checkbox_data();
-  get_entries_data();
+  int entries_are_wrong = get_entries_data();
   set_scheduler_variables();
 
   int values_are_wrong = verify_values();
-  if(!values_are_wrong) execute_scheduler();
+  if(!values_are_wrong && !entries_are_wrong) execute_scheduler();
 }
 
 static void activate(GtkApplication *app, gpointer user_data)

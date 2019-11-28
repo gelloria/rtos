@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include "latex_template.h"
 
 int tasks_id_original[MAX_NUMBER_OF_TASKS] = {0, 1, 2, 3 ,4 , 5};
@@ -381,6 +378,28 @@ int execute_scheduler() {
 
 	int current_task_idx ,continue_loop, non_schedulable;
   reset_vectors();
+
+  // Execute the schedulability tests
+  float u = calculate_u();
+  float U = calculate_U(number_of_tasks);
+
+  // RM test
+  if(u > U){
+    printf("RM test: FAILED, u=%f is greater than U:%f\n", u, U);
+  }else{
+    printf("RM test: PASSED\n");
+  }
+
+  // EDF test
+  if(u > 1){
+    printf("EDF test: FAILED, u:%f is greater than 1\n", u);
+  }else{
+    printf("EDF test: PASSED\n");
+  }
+
+  getchar();
+
+  //LLF test
 
 	// Get the LCM of the period array
 	lcm = array_lcm(tasks_period, 6);

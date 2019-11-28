@@ -2,6 +2,11 @@
 #define CLASS_H
 
 #include <unistd.h>
+#include <ctype.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
 
 #define LINE_NUM 62
 #define TABLE_START 30
@@ -13,12 +18,29 @@
 #define MAX_HYPERPERIOD 1000
 
 int execute_scheduler();
+float calculate_u();
+float calculate_U(int n);
+
 int all_in_one;
 int use_rm;
 int use_edf;
 int use_llf;
 int use_multiple_page;
 int number_of_tasks;
+
+int entry_0_exec_time_int;
+int entry_1_exec_time_int;
+int entry_2_exec_time_int;
+int entry_3_exec_time_int;
+int entry_4_exec_time_int;
+int entry_5_exec_time_int;
+
+int entry_0_text_period_int;
+int entry_1_text_period_int;
+int entry_2_text_period_int;
+int entry_3_text_period_int;
+int entry_4_text_period_int;
+int entry_5_text_period_int;
 
 struct output_matrix {
 	int temp_results[MAX_HYPERPERIOD][MAX_NUMBER_OF_TASKS];
