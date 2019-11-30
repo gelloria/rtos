@@ -181,6 +181,7 @@ int check_pending_tasks(){
 	for (int i = 0; i < number_of_tasks; i++) {
 		if (tasks_run[i] == 0) {
 			printf("Deadline of task %d not met\n", i);
+      non_schedulable = 1;
 		}
 	}
 	return non_schedulable;
@@ -432,7 +433,6 @@ int execute_scheduler() {
 		non_schedulable  = enable_task_based_on_period(current_cycle);
 		continue_loop     = deadline_finish (non_schedulable);
     if (continue_loop == 0) {
-      printf("SE DESPICHO TERE\n");
       results.rm_error = 1;
       break;
     }
@@ -459,7 +459,6 @@ int execute_scheduler() {
 		non_schedulable  = enable_task_based_on_period(current_cycle);
 		continue_loop     = deadline_finish (non_schedulable);
     if (continue_loop == 0) {
-      printf("SE DESPICHO TERE\n");
       results.edf_error = 1;
       break;
     }
@@ -487,7 +486,6 @@ int execute_scheduler() {
 		continue_loop     = deadline_finish (non_schedulable);
     if (continue_loop == 0) {
       results.llf_error = 1;
-      printf("SE DESPICHO TERE\n");
       break;
     }
 		calculate_laxity(current_cycle);
