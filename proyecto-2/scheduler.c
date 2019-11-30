@@ -180,7 +180,7 @@ int check_pending_tasks(){
 
 	for (int i = 0; i < number_of_tasks; i++) {
 		if (tasks_run[i] == 0) {
-			printf("Deadline of task %d not met\n", i);
+			printf("FAILED Deadline of task %d not met\n", i);
       non_schedulable = 1;
 		}
 	}
@@ -295,6 +295,7 @@ void execute_task(int current_task_idx, int current_cycle) {
 		if (current_tasks_ctime_pending == 0) {
 			tasks_ctime_pending[current_task_id] = current_task_ctime; //resets computation for next period.
 			task_state[current_task_id] = 0;  //disable task to run;
+      tasks_run[current_task_id] = 1;
 		}
 	}
 }
@@ -413,8 +414,6 @@ int execute_scheduler() {
   }else{
     printf("EDF test: PASSED\n");
   }
-
-  getchar();
 
   //LLF test
 
