@@ -441,7 +441,12 @@ int execute_scheduler() {
 	}
 
   non_schedulable = check_pending_tasks();
-  if (continue_loop == 0) results.rm_error = 1;
+
+  if (non_schedulable == 1) {
+    results.rm_error = 1;
+  } else {
+    results.rm_error = 0;
+  }
 
 	memcpy(results.rm_results, results.temp_results, sizeof(results.rm_results));
 
@@ -463,7 +468,12 @@ int execute_scheduler() {
 	}
 
   non_schedulable = check_pending_tasks();
-  if (continue_loop == 0) results.edf_error = 1;
+
+  if (non_schedulable == 1) {
+    results.edf_error = 1;
+  } else {
+    results.edf_error = 0;
+  }
 
 	memcpy(results.edf_results, results.temp_results, sizeof(results.rm_results));
 
@@ -486,7 +496,12 @@ int execute_scheduler() {
 	}
 
   non_schedulable = check_pending_tasks();
-  if (continue_loop == 0) results.llf_error = 1;
+
+  if (non_schedulable == 1) {
+    results.llf_error = 1;
+  } else {
+    results.llf_error = 0;
+  }
 
 	memcpy(results.llf_results, results.temp_results, sizeof(results.rm_results));
 
