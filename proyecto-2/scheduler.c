@@ -73,6 +73,22 @@ char *tex[] = {"\\documentclass{beamer}",
 "",
 "",
 "",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
 "\\end{document}"};
 
 int lcm_calculation(int a, int b)
@@ -511,7 +527,24 @@ int execute_scheduler() {
 
   FILE* file = fopen("tmp.tex", "w");
   for(int j = 0; j < LINE_NUM;j++){
-    if ((j == TABLE_START)&&(results.edf_val)) {
+
+
+    if (j == TESTS_START) {
+        fprintf (file, "\\begin{frame}\n");
+        fprintf (file, "\\textbf{SCHEDULABILITY TEST RESULTS} \n");
+        if(u > U){
+          fprintf(file, "\\newline  RM test: FAILED, u=%f is greater than U:%f \\\\ \n", u, U);
+        }else{
+          fprintf(file, "\\newline RM test: PASSED \\\\ \n");
+        }
+        // EDF test
+        if(u > 1){
+          fprintf(file, "EDF test: FAILED, u:%f is greater than 1  \n", u);
+        }else{
+          fprintf(file, "EDF test: PASSED  \n");
+        }
+        fprintf (file, "\\end{frame}\n");
+    } else if ((j == TABLE_START)&&(results.edf_val)) {
 			if (all_in_one) {
 				fprintf (file, "\\begin{frame}\n");
 			}

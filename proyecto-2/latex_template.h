@@ -8,10 +8,11 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define LINE_NUM 62
-#define TABLE_START 30
-#define TABLE2_START 40
-#define TABLE3_START 50
+#define LINE_NUM 78
+#define TESTS_START 28
+#define TABLE_START 45
+#define TABLE2_START 55
+#define TABLE3_START 65
 #define ROWS 6
 #define COLUMNS 18
 #define MAX_NUMBER_OF_TASKS 6
